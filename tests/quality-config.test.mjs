@@ -1,0 +1,43 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+
+const packageJson = JSON.parse(
+  await readFile(new URL("../package.json", import.meta.url), "utf8"),
+);
+const nextConfig = await readFile(
+  new URL("../next.config.ts", import.meta.url),
+  "utf8",
+);
+const qualityWorkflow = await readFile(
+  new URL("../.github/workflows/quality-gates.yml", import.meta.url),
+  "utf8",
+);
+
+test("package scripts expose every strict quality gate", () => {
+  assert.equal(packageJson.scripts.lint, "eslint --max-warnings=0");
+  assert.equal(packageJson.scripts.typecheck, "tsc --noEmit");
+  assert.equal(
+    packageJson.scripts.test,
+    "node --test tests/title-links.test.mjs tests/quality-config.test.mjs",
+  );
+  assert.equal(
+    packageJson.scripts.quality,
+    "npm run lint && npm run typecheck && npm test && npm run build",
+  );
+});
+
+test("Next.js build cannot ignore TypeScript errors", () => {
+  assert.doesNotMatch(nextConfig, /ignoreBuildErrors\s*:\s*true/);
+});
+
+test("pull-request workflow runs all strict gates", () => {
+  for (const command of [
+    "npm run lint",
+    "npm run typecheck",
+    "npm test",
+    "npm run build",
+  ]) {
+    assert.match(qualityWorkflow, new RegExp(command.replaceAll(" ", "\\s+")));
+  }
+});

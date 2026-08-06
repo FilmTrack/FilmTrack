@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+import TmdbImage from "@/components/TmdbImage";
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
@@ -79,7 +80,7 @@ export default async function DashboardPage() {
                       {/* پوستر */}
                       <div className="w-full sm:w-24 h-36 sm:h-36 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
                         {tmdb.poster_path && (
-                          <img src={`https://image.tmdb.org/t/p/w500${tmdb.poster_path}`} alt={tmdb.title || tmdb.name} className="w-full h-full object-cover" />
+                          <TmdbImage src={`https://image.tmdb.org/t/p/w500${tmdb.poster_path}`} alt={tmdb.title || tmdb.name} className="w-full h-full object-cover" />
                         )}
                       </div>
                       

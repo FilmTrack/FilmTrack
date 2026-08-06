@@ -40,7 +40,15 @@ jobs:
         shell: bash
         run: |
           SDKMANAGER="${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
-          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses > /dev/null
+          LICENSE_STATUS="${PIPESTATUS[1]}"
+          set -o pipefail
+          if [ "$LICENSE_STATUS" -ne 0 ]; then
+            echo "::error::Android SDK license acceptance failed."
+            exit "$LICENSE_STATUS"
+          fi
+
           "$SDKMANAGER" \
             "platform-tools" \
             "platforms;android-36" \
@@ -48,6 +56,9 @@ jobs:
 
       - name: Install NPM dependencies
         run: npm ci
+
+      - name: Run strict quality gates
+        run: npm run quality
 
       - name: Verify Capacitor versions
         shell: bash
@@ -177,7 +188,9 @@ jobs:
 
           if [ ! -f "$APK_PATH" ]; then
             echo "::error::Release APK was not generated at $APK_PATH"
-            find android/app/build/outputs -type f -print 2>/dev/null || true
+            if [ -d android/app/build/outputs ]; then
+              find android/app/build/outputs -type f -print
+            fi
             exit 1
           fi
 

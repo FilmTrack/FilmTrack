@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
+import TmdbImage from "@/components/TmdbImage";
 type TMDBResult = {
   id: number;
   poster_path: string | null;
@@ -33,8 +34,8 @@ const Carousel = ({ title, items, type }: { title: string; items: TMDBResult[]; 
           <Link href={`/title/${item.id}?type=${type}`} key={item.id} className="flex-shrink-0 w-32 md:w-40 group">
             <div className="w-full h-48 md:h-60 bg-gray-800 rounded-lg overflow-hidden transition-transform group-hover:scale-105 shadow-lg">
               {item.poster_path && (
-                <img 
-                  src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} 
+                <TmdbImage
+                  src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
                   alt={item.title || item.name || "Poster"}
                   className="w-full h-full object-cover"
                 />
@@ -73,14 +74,14 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen text-white">
-      
+
       {/* بخش Hero */}
       <div className="relative h-[50vh] min-h-[400px] w-full overflow-hidden mb-12">
         {trendingMovies[0] && (
           <div className="absolute inset-0">
-            <img 
-              src={`https://image.tmdb.org/t/p/original${trendingMovies[0].backdrop_path || trendingMovies[0].poster_path}`} 
-              alt="Hero" 
+            <TmdbImage
+              src={`https://image.tmdb.org/t/p/original${trendingMovies[0].backdrop_path || trendingMovies[0].poster_path}`}
+              alt="Hero"
               className="w-full h-full object-cover opacity-30"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e0e] to-transparent"></div>
@@ -93,7 +94,7 @@ export default async function Home() {
           <p className="text-gray-400 text-lg mb-8 max-w-2xl">
             به بزرگترین جامعه فارسی‌زبان عاشقان سینما بپیوندید. لیست تماشای خود را بسازید و با دوستانتان به اشتراک بگذارید.
           </p>
-          
+
           {/* تغییر دکمه بر اساس وضعیت لاگین */}
           {session ? (
             <Link href="/dashboard">
@@ -115,7 +116,7 @@ export default async function Home() {
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <Carousel title="🔥 سریال‌های ترند هفته" items={trendingShows} type="tv" />
         <Carousel title="🎬 فیلم‌های ترند هفته" items={trendingMovies} type="movie" />
-        
+
         <div className="mb-12">
           <h2 className="text-xl font-bold text-white mb-4 pr-1">کاوش بر اساس ژانر</h2>
           <div className="flex gap-3 flex-wrap">

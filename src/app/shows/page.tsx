@@ -1,9 +1,23 @@
 import Link from "next/link";
 
-async function fetchShows() {
+import TmdbImage from "@/components/TmdbImage";
+import {
+  fetchJson,
+  type TmdbMediaSummary,
+  type TmdbSearchResponse,
+} from "@/lib/tmdb";
+
+async function fetchShows(): Promise<TmdbMediaSummary[]> {
   const apiKey = process.env.TMDB_API_KEY;
-  const res = await fetch(`https://api.themoviedb.org/3/tv/popular?api_key=${apiKey}&language=en-US&page=1`);
-  return (await res.json()).results || [];
+  if (!apiKey) return [];
+
+  const url = new URL("https://api.themoviedb.org/3/tv/popular");
+  url.searchParams.set("api_key", apiKey);
+  url.searchParams.set("language", "en-US");
+  url.searchParams.set("page", "1");
+
+  const data = await fetchJson<TmdbSearchResponse>(url);
+  return data?.results ?? [];
 }
 
 export default async function ShowsPage() {
@@ -12,14 +26,28 @@ export default async function ShowsPage() {
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 border-r-4 border-blue-600 pr-3">سریال‌های محبوب</h1>
+        <h1 className="text-3xl font-bold mb-8 border-r-4 border-blue-600 pr-3">
+          سریال‌های محبوب
+        </h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {shows.map((show: any) => (
-            <Link href={`/title/${show.id}?type=tv`} key={show.id} className="group">
+          {shows.map((show) => (
+            <Link
+              href={`/title/${show.id}?type=tv`}
+              key={show.id}
+              className="group"
+            >
               <div className="w-full aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden transition-transform group-hover:scale-105">
-                <img src={`https://image.tmdb.org/t/p/w500${show.poster_path}`} alt={show.name} className="w-full h-full object-cover" loading="lazy" />
+                {show.poster_path && (
+                  <TmdbImage
+                    src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
+                    alt={show.name || "TV poster"}
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
-              <p className="mt-2 text-sm text-gray-400 truncate group-hover:text-white">{show.name}</p>
+              <p className="mt-2 text-sm text-gray-400 truncate group-hover:text-white">
+                {show.name}
+              </p>
             </Link>
           ))}
         </div>

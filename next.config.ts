@@ -1,19 +1,23 @@
-import withSerwistInit from '@serwist/next';
+import withSerwistInit from "@serwist/next";
+import type { NextConfig } from "next";
 
 const withSerwist = withSerwistInit({
-  swSrc: 'src/app/sw.ts',
-  swDest: 'public/sw.js',
-  disable: process.env.NODE_ENV === 'development',
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV !== "production",
 });
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {},
-  typescript: {
-    ignoreBuildErrors: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "image.tmdb.org",
+      },
+    ],
   },
-  // بخش eslint کاملاً حذف شد
 };
 
 export default withSerwist(nextConfig);
