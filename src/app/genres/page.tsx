@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import TmdbImage from "@/components/TmdbImage";
 const genres = [
   { id: 28, name: "اکشن" },
   { id: 35, name: "کمدی" },
@@ -34,17 +35,17 @@ export default async function GenresPage() {
     <div className="min-h-screen bg-[#0e0e0e] text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-8 border-r-4 border-blue-600 pr-3">کاوش بر اساس ژانر</h1>
-        
+
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {genres.map((genre, index) => {
             const movie = topMovies[index];
             return (
               <Link href={`/genre/${genre.id}`} key={genre.id} className="group relative h-40 rounded-xl overflow-hidden border border-gray-800">
                 {movie?.backdrop_path ? (
-                  <img 
-                    src={`https://image.tmdb.org/t/p/w500${movie.backdrop_path}`} 
-                    alt={genre.name} 
-                    className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-30 group-hover:scale-110 transition-all duration-300" 
+                  <TmdbImage
+                    src={`https://image.tmdb.org/t/p/w500${movie.backdrop_path}`}
+                    alt={genre.name}
+                    className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-30 group-hover:scale-110 transition-all duration-300"
                   />
                 ) : (
                   <div className="absolute inset-0 bg-gray-800"></div>

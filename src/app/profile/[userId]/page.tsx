@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
+import TmdbImage from "@/components/TmdbImage";
 export default async function PublicProfile({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
   const supabase = await createClient();
@@ -35,7 +35,7 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
             {combinedList.map(({ db, tmdb }) => (
               <Link href={`/title/${db.title_id}?type=${db.title_type}`} key={db.id} className="group">
                 <div className="w-full aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden transition-transform group-hover:scale-105">
-                  <img src={`https://image.tmdb.org/t/p/w500${tmdb.poster_path}`} alt={tmdb.title || tmdb.name} className="w-full h-full object-cover" loading="lazy" />
+                  <TmdbImage src={`https://image.tmdb.org/t/p/w500${tmdb.poster_path}`} alt={tmdb.title || tmdb.name} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <p className="mt-2 text-sm text-gray-400 truncate group-hover:text-white">{tmdb.title || tmdb.name}</p>
                 <span className="text-xs text-blue-500">{db.status === 'watching' ? 'در حال تماشا' : 'تماشا شده'}</span>

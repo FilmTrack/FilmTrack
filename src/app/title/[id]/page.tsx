@@ -1,17 +1,18 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import TmdbImage from "@/components/TmdbImage";
 import { ChevronLeft, Star, Users, PlayCircle, Clapperboard } from "lucide-react";
 import ActionButtons from "@/components/ActionButtons";
 import CommentsSection from "@/components/CommentsSection";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
-
-function getRottenTomatoesUrl(title: string, type: string) {
-  if (!title) return "#";
-  let slug = title.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, "_");
-  const prefix = type === 'movie' ? 'm' : 'tv';
-  return `https://www.rottentomatoes.com/${prefix}/${slug}`;
-}
+import { getRottenTomatoesUrl } from "@/lib/title-links.mjs";
+import {
+  fetchJson,
+  type OmdbResponse,
+  type TmdbTitleDetails,
+  type TranslationResponse,
+} from "@/lib/tmdb";
 
 export default async function TitlePage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ type?: string }> }) {
   const { id } = await params;
@@ -26,13 +27,15 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
     `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=fa-IR`
   ];
 
-  const [enRes, faRes] = await Promise.all(urls.map(u => fetch(u).then(r => r.json()).catch(() => null)));
+  const [enRes, faRes] = await Promise.all(
+    urls.map((url) => fetchJson<TmdbTitleDetails>(url)),
+  );
   if (!enRes) return notFound();
 
   const data = enRes;
-  const faData = faRes || {};
+  const faData: Partial<TmdbTitleDetails> = faRes ?? {};
   
-  const title = data.title || data.name;
+  const title = data.title || data.name || "Untitled";
   const faTitle = faData.title || faData.name || title;
   const releaseYear = data.release_date ? new Date(data.release_date).getFullYear() : data.first_air_date ? new Date(data.first_air_date).getFullYear() : 'N/A';
   const runtime = data.runtime || (data.episode_run_time && data.episode_run_time[0]) || 0;
@@ -40,9 +43,11 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
   let faOverview = faData.overview;
   if (!faOverview && data.overview) {
     try {
-      const transRes = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(data.overview)}&langpair=en|fa`);
-      const transData = await transRes.json();
-      faOverview = transData.responseData?.translatedText || data.overview;
+      const transUrl = new URL("https://api.mymemory.translated.net/get");
+      transUrl.searchParams.set("q", data.overview);
+      transUrl.searchParams.set("langpair", "en|fa");
+      const transData = await fetchJson<TranslationResponse>(transUrl);
+      faOverview = transData?.responseData?.translatedText || data.overview;
     } catch {
       faOverview = data.overview;
     }
@@ -58,12 +63,12 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
       const omdbRes = await fetch(`https://www.omdbapi.com/?i=${data.imdb_id}&apikey=${process.env.OMDB_API_KEY}`, {
         next: { revalidate: 604800 } // 604800 ثانیه = 1 هفته
       });
-      const omdbData = await omdbRes.json();
+      const omdbData = (await omdbRes.json()) as OmdbResponse;
       
       if (omdbData.Response === "True") {
         const ratings = omdbData.Ratings || [];
-        const imdbRating = ratings.find((r: any) => r.Source === "Internet Movie Database");
-        const rtRating = ratings.find((r: any) => r.Source === "Rotten Tomatoes");
+        const imdbRating = ratings.find((rating) => rating.Source === "Internet Movie Database");
+        const rtRating = ratings.find((rating) => rating.Source === "Rotten Tomatoes");
         
         if (imdbRating) imdbScore = imdbRating.Value.split('/')[0];
         if (rtRating) rtScore = rtRating.Value;
@@ -73,8 +78,8 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
     }
   }
   
-  const trailer = data.videos?.results?.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
-  const director = data.credits?.crew?.find((c: any) => c.job === 'Director') || data.created_by?.[0];
+  const trailer = data.videos?.results?.find((video) => video.type === 'Trailer' && video.site === 'YouTube');
+  const director = data.credits?.crew?.find((crewMember) => crewMember.job === 'Director') || data.created_by?.[0];
   const cast = data.credits?.cast?.slice(0, 12) || [];
 
   const supabase = await createClient();
@@ -86,7 +91,7 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white relative">
       <div className="absolute top-0 left-0 w-full h-[70vh] overflow-hidden">
-        {data.backdrop_path && <img src={`https://image.tmdb.org/t/p/original${data.backdrop_path}`} alt={title} className="w-full h-full object-cover opacity-20" />}
+        {data.backdrop_path && <TmdbImage src={`https://image.tmdb.org/t/p/original${data.backdrop_path}`} alt={title} className="w-full h-full object-cover opacity-20" />}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e]/80 to-transparent"></div>
       </div>
 
@@ -96,7 +101,7 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
         <div className="flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
             <div className="w-full aspect-[2/3] rounded-xl overflow-hidden shadow-2xl border border-gray-800">
-              {data.poster_path && <img src={`https://image.tmdb.org/t/p/w500${data.poster_path}`} alt={title} className="w-full h-full object-cover" />}
+              {data.poster_path && <TmdbImage src={`https://image.tmdb.org/t/p/w500${data.poster_path}`} alt={title} className="w-full h-full object-cover" />}
             </div>
             <ActionButtons titleId={id} type={type} />
           </div>
@@ -105,6 +110,10 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
             <div>
               <h1 className="text-3xl md:text-5xl font-extrabold">{faTitle}</h1>
               <h2 className="text-lg text-gray-500 mt-1">{title}</h2>
+              <p className="text-sm text-gray-500 mt-2">
+                {releaseYear}
+                {runtime > 0 ? ` • ${runtime} دقیقه` : ""}
+              </p>
             </div>
 
             {/* بخش امتیازها */}
@@ -138,7 +147,7 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {data.genres?.map((g: any) => <Badge key={g.id} variant="secondary" className="bg-gray-800 text-gray-300">{g.name}</Badge>)}
+              {data.genres?.map((genre) => <Badge key={genre.id} variant="secondary" className="bg-gray-800 text-gray-300">{genre.name}</Badge>)}
             </div>
 
             {trailer && (
@@ -163,10 +172,10 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
                 <h3 className="text-lg font-bold mb-3 flex items-center gap-2"><Users className="w-5 h-5 text-blue-500" /> بازیگران و عوامل</h3>
                 {director && <p className="text-gray-400 text-sm mb-3">ساخته شده توسط: <span className="text-white font-medium">{director.name}</span></p>}
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                  {cast.map((member: any) => (
+                  {cast.map((member) => (
                     <div key={member.id} className="flex-shrink-0 w-20 text-center">
                       <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-800 mb-2 border-2 border-gray-700">
-                        {member.profile_path && <img src={`https://image.tmdb.org/t/p/w200${member.profile_path}`} alt={member.name} className="w-full h-full object-cover" />}
+                        {member.profile_path && <TmdbImage src={`https://image.tmdb.org/t/p/w200${member.profile_path}`} alt={member.name} className="w-full h-full object-cover" />}
                       </div>
                       <p className="text-xs text-white font-medium truncate">{member.name}</p>
                       <p className="text-xs text-gray-500 truncate">{member.character}</p>
@@ -180,11 +189,11 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
               <div className="mt-8">
                 <h3 className="text-lg font-bold mb-3 flex items-center gap-2"><Clapperboard className="w-5 h-5 text-blue-500" /> قسمت‌ها و فصل‌ها</h3>
                 <div className="space-y-3">
-                  {data.seasons.filter((s: any) => s.season_number > 0).map((season: any) => (
+                  {data.seasons.filter((season) => season.season_number > 0).map((season) => (
                     <details key={season.id} className="bg-[#1a1a1a] border border-gray-800 rounded-lg overflow-hidden group">
                       <summary className="flex items-center gap-4 p-3 cursor-pointer hover:bg-gray-800 transition-colors list-none">
                         {season.poster_path ? (
-                          <img src={`https://image.tmdb.org/t/p/w200${season.poster_path}`} alt={season.name} className="w-12 h-16 rounded object-cover flex-shrink-0" />
+                          <TmdbImage src={`https://image.tmdb.org/t/p/w200${season.poster_path}`} alt={season.name} className="w-12 h-16 rounded object-cover flex-shrink-0" />
                         ) : (
                           <div className="w-12 h-16 bg-gray-700 rounded flex items-center justify-center flex-shrink-0 text-xs">بدون عکس</div>
                         )}

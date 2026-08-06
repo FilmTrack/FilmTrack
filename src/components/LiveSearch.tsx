@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import TmdbImage from "@/components/TmdbImage"
 
 type SearchResult = {
   id: number;
@@ -24,25 +25,40 @@ export default function LiveSearch() {
 
   // Debounce: صبر می‌کند تا کاربر تایپ کردن را متوقف کند
   useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([])
-      return
-    }
+    const normalizedQuery = query.trim()
+    if (normalizedQuery.length < 2) return undefined
 
-    setIsLoading(true)
+    const controller = new AbortController()
     const delayDebounceFn = setTimeout(async () => {
+      setIsLoading(true)
+
       try {
-        const res = await fetch(`/api/search?q=${query}`)
-        const data = await res.json()
+        const searchParams = new URLSearchParams({ q: normalizedQuery })
+        const res = await fetch(`/api/search?${searchParams}`, {
+          signal: controller.signal,
+        })
+
+        if (!res.ok) {
+          throw new Error(`Search failed with status ${res.status}`)
+        }
+
+        const data = (await res.json()) as SearchResult[]
         setResults(data)
-      } catch {
-        setResults([])
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setResults([])
+        }
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) {
+          setIsLoading(false)
+        }
       }
     }, 300) // 300 میلی‌ثانیه تاخیر
 
-    return () => clearTimeout(delayDebounceFn)
+    return () => {
+      clearTimeout(delayDebounceFn)
+      controller.abort()
+    }
   }, [query])
 
   // بستن منو با کلیک خارج از آن
@@ -64,8 +80,14 @@ export default function LiveSearch() {
         className="bg-[#1a1a1a] border-gray-800 text-white placeholder:text-gray-500 pr-10 focus-visible:ring-blue-600"
         value={query}
         onChange={(e) => {
-          setQuery(e.target.value)
+          const nextQuery = e.target.value
+          setQuery(nextQuery)
           setShowResults(true)
+
+          if (nextQuery.trim().length < 2) {
+            setResults([])
+            setIsLoading(false)
+          }
         }}
         onFocus={() => setShowResults(true)}
         onKeyDown={(e) => {
@@ -97,7 +119,7 @@ export default function LiveSearch() {
                   <li className="flex items-center gap-3 p-2 hover:bg-gray-800 transition-colors cursor-pointer">
                     <div className="w-10 h-14 bg-gray-700 rounded overflow-hidden flex-shrink-0">
                       {item.poster_path && (
-                        <img src={`https://image.tmdb.org/t/p/w92${item.poster_path}`} alt={item.title || item.name} className="w-full h-full object-cover" />
+                        <TmdbImage src={`https://image.tmdb.org/t/p/w92${item.poster_path}`} alt={item.title || item.name || "Search result"} className="w-full h-full object-cover" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
