@@ -158,16 +158,52 @@ jobs:
       # مراحل اصلاح شده برای ساخت نسخه رسمی (با استفاده از ENV)
       # =======================================================
 
-      - name: Decode Keystore
+      - name: Decode and validate signing keystore
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          printf "%s" "$KEYSTORE_BASE64" | tr -cd 'A-Za-z0-9+/=' | base64 --decode > $RUNNER_TEMP/filmtrack.keystore
-          if [ ! -s "$RUNNER_TEMP/filmtrack.keystore" ]; then
-            echo "Error: Keystore file is empty or invalid!"
+          set -euo pipefail
+
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::KEYSTORE_BASE64 is missing."
             exit 1
           fi
+
+          printf '%s' "$KEYSTORE_BASE64" |
+            base64 --decode > "$RUNNER_TEMP/filmtrack.keystore"
+
+          if [ ! -s "$RUNNER_TEMP/filmtrack.keystore" ]; then
+            echo "::error::Decoded keystore is empty."
+            exit 1
+          fi
+
+          keytool -list \
+            -keystore "$RUNNER_TEMP/filmtrack.keystore" \
+            -storepass:env KEYSTORE_PASSWORD \
+            -alias "$KEY_ALIAS" > /dev/null
+
+          keytool -exportcert \
+            -keystore "$RUNNER_TEMP/filmtrack.keystore" \
+            -storepass:env KEYSTORE_PASSWORD \
+            -alias "$KEY_ALIAS" \
+            -file "$RUNNER_TEMP/filmtrack-signing-cert.der" > /dev/null
+
+          EXPECTED_CERT_SHA256="$(
+            sha256sum "$RUNNER_TEMP/filmtrack-signing-cert.der" |
+              awk '{print toupper($1)}'
+          )"
+
+          if [ -z "$EXPECTED_CERT_SHA256" ]; then
+            echo "::error::Could not calculate signing certificate SHA-256."
+            exit 1
+          fi
+
+          echo "EXPECTED_CERT_SHA256=$EXPECTED_CERT_SHA256" >> "$GITHUB_ENV"
+          echo "Signing keystore validation: PASS"
+          echo "Signing certificate SHA-256: $EXPECTED_CERT_SHA256"
 
       - name: Grant execute permission to Gradle Wrapper
         run: chmod +x android/gradlew
@@ -181,10 +217,13 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew clean assembleRelease --no-daemon -x lint --stacktrace -Pandroid.injected.signing.store.file=$KEYSTORE_PATH -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key.alias=$KEY_ALIAS -Pandroid.injected.signing.key.password=$KEY_PASSWORD
 
-      - name: Verify APK
+      - name: Verify APK and signing continuity
         shell: bash
         run: |
+          set -euo pipefail
+
           APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+          APKSIGNER="${ANDROID_SDK_ROOT:-$ANDROID_HOME}/build-tools/36.0.0/apksigner"
 
           if [ ! -f "$APK_PATH" ]; then
             echo "::error::Release APK was not generated at $APK_PATH"
@@ -194,6 +233,33 @@ jobs:
             exit 1
           fi
 
+          "$APKSIGNER" verify --verbose "$APK_PATH"
+
+          ACTUAL_CERT_SHA256="$(
+            "$APKSIGNER" verify --print-certs "$APK_PATH" |
+              awk -F': ' '/Signer #1 certificate SHA-256 digest:/ {print toupper($2); exit}'
+          )"
+
+          if [ -z "$ACTUAL_CERT_SHA256" ]; then
+            echo "::error::Could not read APK signer SHA-256."
+            exit 1
+          fi
+
+          if [ "$ACTUAL_CERT_SHA256" != "$EXPECTED_CERT_SHA256" ]; then
+            echo "::error::APK signer does not match the original FilmTrack keystore certificate."
+            echo "Expected: $EXPECTED_CERT_SHA256"
+            echo "Actual:   $ACTUAL_CERT_SHA256"
+            exit 1
+          fi
+
+          APK_SHA256="$(
+            sha256sum "$APK_PATH" |
+              awk '{print toupper($1)}'
+          )"
+
+          echo "APK signature verification: PASS"
+          echo "Signer SHA-256: $ACTUAL_CERT_SHA256"
+          echo "APK SHA-256: $APK_SHA256"
           ls -lh "$APK_PATH"
 
       - name: Upload Release APK
