@@ -7,17 +7,21 @@ import Link from "next/link";
 import TmdbImage from "@/components/TmdbImage";
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
 
-  // اگر کاربر لاگین نکرده بود، او را به صفحه لاگین بفرست
-  if (!session) {
+  // هویت سمت سرور باید قبل از دسترسی به داده کاربر verify شود.
+  if (!userId) {
     redirect("/auth");
   }
 
-  // ۱. گرفتن لیست کاربر از دیتابیس Supabase
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // RLS لایه enforcement است؛ filter صریح ownership هم حفظ می‌شود.
   const { data: userLists } = await supabase
     .from('user_lists')
     .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
   const apiKey = process.env.TMDB_API_KEY;
@@ -116,12 +120,12 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800">
               <Avatar className="w-16 h-16 border-2 border-blue-600">
                 <AvatarFallback className="bg-gray-800 text-2xl text-blue-500">
-                  {session.user.email?.[0].toUpperCase()}
+                  {user?.email?.[0]?.toUpperCase() || 'F'}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-gray-400 text-sm">خوش آمدید،</p>
-                <h3 className="font-bold text-lg truncate">{session.user.email}</h3>
+                <h3 className="font-bold text-lg truncate">{user?.email || 'FilmTrack'}</h3>
               </div>
             </div>
             

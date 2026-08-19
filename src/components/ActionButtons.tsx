@@ -28,7 +28,7 @@ export default function ActionButtons({ titleId, type }: { titleId: string, type
         title_type: type, 
         status: status 
       }, {
-        onConflict: 'user_id,title_id'
+        onConflict: 'user_id,title_id,title_type'
       })
 
     if (error) {
