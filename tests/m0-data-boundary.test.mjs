@@ -19,11 +19,7 @@ const [
   read("supabase/migrations/20260819094500_m0_data_boundary_foundation.sql"),
 ]);
 
-test("user_lists media identity includes title_type in app and migration", () => {
-  assert.match(
-    actionButtons,
-    /onConflict:\s*['"]user_id,title_id,title_type['"]/,
-  );
+test("user_lists media identity includes title_type in migration", () => {
   assert.match(
     migration,
     /unique\s*\(\s*user_id\s*,\s*title_id\s*,\s*title_type\s*\)/i,
@@ -31,6 +27,30 @@ test("user_lists media identity includes title_type in app and migration", () =>
   assert.doesNotMatch(
     migration,
     /unique\s*\(\s*user_id\s*,\s*title_id\s*\)\s*;/i,
+  );
+});
+
+test("watchlist rollout bridge works without schema-specific onConflict targets", () => {
+  assert.doesNotMatch(actionButtons, /\.upsert\s*\(/);
+  assert.match(
+    actionButtons,
+    /const\s+UNIQUE_VIOLATION\s*=\s*['"]23505['"]/,
+  );
+  assert.match(
+    actionButtons,
+    /\.from\(\s*['"]user_lists['"]\s*\)\s*\n\s*\.insert\(listEntry\)/,
+  );
+  assert.match(
+    actionButtons,
+    /\.eq\(\s*['"]title_type['"]\s*,\s*type\s*\)/,
+  );
+  assert.match(
+    actionButtons,
+    /\(exactRows\?\.length\s*\?\?\s*0\)\s*===\s*0/,
+  );
+  assert.match(
+    actionButtons,
+    /\.update\(\s*\{\s*title_type:\s*type,\s*status,?\s*\}\s*\)/s,
   );
 });
 
