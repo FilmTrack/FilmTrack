@@ -83,8 +83,14 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
   const cast = data.credits?.cast?.slice(0, 12) || [];
 
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const { data: comments } = await supabase.from('comments').select('*').eq('title_id', Number(id)).order('created_at', { ascending: false });
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const isLoggedIn = Boolean(claimsData?.claims?.sub);
+  const { data: comments } = await supabase
+    .from('comments')
+    .select('id, content, is_spoiler, created_at')
+    .eq('title_id', Number(id))
+    .eq('title_type', type)
+    .order('created_at', { ascending: false });
 
   const rtUrl = getRottenTomatoesUrl(title, type);
 
@@ -212,7 +218,7 @@ export default async function TitlePage({ params, searchParams }: { params: Prom
               </div>
             )}
 
-            <CommentsSection titleId={id} titleType={type} initialComments={comments || []} isLoggedIn={!!session} />
+            <CommentsSection titleId={id} titleType={type} initialComments={comments || []} isLoggedIn={isLoggedIn} />
           </div>
         </div>
       </div>

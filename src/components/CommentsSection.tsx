@@ -12,7 +12,7 @@ type Comment = {
   content: string
   is_spoiler: boolean
   created_at: string
-  user_email: string | null
+
 }
 
 export default function CommentsSection({ 
@@ -52,8 +52,7 @@ export default function CommentsSection({
       is_spoiler: isSpoiler,
       title_id: Number(titleId),
       title_type: titleType,
-      user_id: session.user.id,
-      user_email: session.user.email
+      user_id: session.user.id
     })
 
     if (error) {
@@ -116,7 +115,7 @@ export default function CommentsSection({
             <div key={comment.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-blue-500 text-sm">
-                  {comment.user_email ? comment.user_email.split('@')[0] : 'کاربر ناشناس'}
+                  کاربر FilmTrack
                 </span>
                 <span className="text-xs text-gray-600">
                   {new Date(comment.created_at).toLocaleDateString('fa-IR')}
