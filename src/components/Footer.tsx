@@ -8,14 +8,14 @@ export default function Footer() {
         
         <div className="col-span-2 md:col-span-1">
           <Logo />
-          <p className="text-xs leading-6 mt-4">بزرگترین جامعه فارسی‌زبان عاشقان سینما و سریال. فیلم‌هایت را ردیابی کن و با دوستانت به اشتراک بگذار.</p>
+          <p className="text-xs leading-6 mt-4">خانه فارسی‌زبان علاقه‌مندان فیلم و سریال؛ عنوان‌هایت را کشف و مسیر تماشایت را ثبت کن.</p>
         </div>
 
         <div>
           <h3 className="text-white font-bold mb-4">کاوش کنید</h3>
           <ul className="space-y-2">
-            <li><Link href="/shows?cat=trending" className="hover:text-blue-500">سریال‌های ترند</Link></li>
-            <li><Link href="/movies?cat=trending" className="hover:text-blue-500">فیلم‌های ترند</Link></li>
+            <li><Link href="/shows" className="hover:text-blue-500">سریال‌های محبوب</Link></li>
+            <li><Link href="/movies" className="hover:text-blue-500">فیلم‌های محبوب</Link></li>
             <li><Link href="/genres" className="hover:text-blue-500">ژانرها</Link></li>
             <li><Link href="/calendar" className="hover:text-blue-500">تقویم پخش</Link></li>
           </ul>

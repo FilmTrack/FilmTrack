@@ -19,7 +19,9 @@
 
 ## ✨ About FilmTrack
 
-**FilmTrack** is a modern, Persian-first platform designed for movie and TV show enthusiasts. Track your watched content, get personalized release calendars, interact with a vibrant community without spoilers, and discover where to watch legally — all in one place.
+**FilmTrack** is a modern, Persian-first platform for discovering movies and TV shows, building a personal watchlist, tracking viewing status, and discussing titles with spoiler protection.
+
+FilmTrack is currently a **public beta**. Episode-level tracking, personalized calendars, import tools, richer community features, and recommendation systems are planned on the public roadmap rather than presented as shipped capabilities.
 
 Whether you're a casual viewer or a hardcore cinephile, FilmTrack brings your entertainment journey to life.
 
@@ -31,11 +33,11 @@ Whether you're a casual viewer or a hardcore cinephile, FilmTrack brings your en
 |---------|-------------|
 | 🔐 **User Authentication** | Secure sign-up and login powered by Supabase Auth, including Google and GitHub OAuth. |
 | 🏠 **Dynamic Landing Page** | Hero section, trending movies/shows, and genre browsing with a responsive grid layout. |
-| 📊 **Personal Dashboard** | A TV Time‑like interface showing real‑time user stats, watchlists, and personalized recommendations. |
+| 📊 **Personal Dashboard** | Personal watchlist and current tracking statistics. |
 | 🎞️ **Rich Title Pages** | Bilingual overviews (Persian/English), Cast & Crew photos, YouTube trailers, Seasons & Episodes list, and direct links to IMDb and Rotten Tomatoes. |
 | 🚫 **Anti-Spoiler Commenting** | Comments are blurred if marked as spoilers, protecting users from unwanted plot leaks. |
 | 🔍 **Live Search** | Secure API route with 300ms debounce for instant movie/TV show discovery. |
-| 📅 **Personalized Calendar** | A comprehensive 7‑day calendar showing all upcoming episodes and movie releases sorted chronologically. |
+| 📅 **Release Calendar** | A 7‑day TMDB-based calendar of upcoming movie and TV releases. |
 | 🇮🇷 **Persian‑First UI** | Fully RTL interface with the beautiful Vazirmatn font. |
 
 ---
@@ -59,7 +61,8 @@ Whether you're a casual viewer or a hardcore cinephile, FilmTrack brings your en
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/AmirMotefaker/FilmTrack.gitcd FilmTrack
+git clone https://github.com/AmirMotefaker/FilmTrack.git
+cd FilmTrack
 ```
 
 ### 2. Install dependencies
@@ -88,6 +91,8 @@ npm run dev
 ## 📖 Build in Public
 
 This project is being built entirely in public! We believe in open-source and community-driven development.
+
+See the [2026/2027 product roadmap](docs/product/ROADMAP-2026.md) for shipped, in-progress, and planned milestones.
 
 
 
