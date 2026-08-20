@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import LogoutButton from "./LogoutButton";
 import LiveSearch from "./LiveSearch";
 import Logo from "./Logo"; // اضافه شدن لوگوی جدید
-import { ChevronDown, Film, ListVideo, Tv, Flame, TrendingUp, Eye, Wine, Calendar } from "lucide-react";
+import { ChevronDown, Film, ListVideo, Tv, Calendar } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,8 @@ import {
 
 export default async function Navbar() {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const isLoggedIn = Boolean(claimsData?.claims?.sub);
 
   return (
     <header className="w-full border-b border-gray-800 bg-[#0e0e0e]/95 backdrop-blur-md sticky top-0 z-50">
@@ -31,10 +32,7 @@ export default async function Navbar() {
                 <Tv className="w-4 h-4" /> سریال‌ها <ChevronDown className="w-4 h-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-[#1a1a1a] border-gray-800 text-white">
-                <Link href="/shows?cat=trending" className="cursor-pointer block"><DropdownMenuItem><Flame className="w-4 h-4 ml-2" /> پرطرفدار (Trending)</DropdownMenuItem></Link>
-                <Link href="/shows?cat=added" className="cursor-pointer block"><DropdownMenuItem><TrendingUp className="w-4 h-4 ml-2" /> بیشترین موارد اضافه شده</DropdownMenuItem></Link>
-                <Link href="/shows?cat=watched" className="cursor-pointer block"><DropdownMenuItem><Eye className="w-4 h-4 ml-2" /> پربیننده‌ترین‌ها</DropdownMenuItem></Link>
-                <Link href="/shows?cat=binged" className="cursor-pointer block"><DropdownMenuItem><Wine className="w-4 h-4 ml-2" /> پرمصرف‌ترین‌ها (Binged)</DropdownMenuItem></Link>
+                <Link href="/shows" className="cursor-pointer block"><DropdownMenuItem>سریال‌های محبوب TMDB</DropdownMenuItem></Link>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -43,8 +41,7 @@ export default async function Navbar() {
                 <Film className="w-4 h-4" /> فیلم‌ها <ChevronDown className="w-4 h-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-[#1a1a1a] border-gray-800 text-white">
-                <Link href="/movies?cat=trending" className="cursor-pointer block"><DropdownMenuItem><Flame className="w-4 h-4 ml-2" /> پرطرفدار (Trending)</DropdownMenuItem></Link>
-                <Link href="/movies?cat=added" className="cursor-pointer block"><DropdownMenuItem><TrendingUp className="w-4 h-4 ml-2" /> بیشترین موارد اضافه شده</DropdownMenuItem></Link>
+                <Link href="/movies" className="cursor-pointer block"><DropdownMenuItem>فیلم‌های محبوب TMDB</DropdownMenuItem></Link>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -74,7 +71,7 @@ export default async function Navbar() {
 
         <div className="flex items-center gap-4">
           <LiveSearch />
-          {session ? (
+          {isLoggedIn ? (
             <>
               <Link href="/dashboard"><Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-gray-800 hidden md:block">پنل کاربری</Button></Link>
               <LogoutButton />

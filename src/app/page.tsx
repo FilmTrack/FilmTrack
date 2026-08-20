@@ -15,7 +15,10 @@ async function fetchTMDB(endpoint: string) {
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) return [];
   try {
-    const res = await fetch(`https://api.themoviedb.org/3${endpoint}?api_key=${apiKey}&language=en-US`);
+    const res = await fetch(
+      `https://api.themoviedb.org/3${endpoint}?api_key=${apiKey}&language=fa-IR`,
+      { next: { revalidate: 900 } },
+    );
     if (!res.ok) return [];
     const data = await res.json();
     return data.results || [];
@@ -61,7 +64,8 @@ export default async function Home() {
 
   // بررسی وضعیت لاگین کاربر
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const isLoggedIn = Boolean(claimsData?.claims?.sub);
 
   const genres = [
     { id: 28, name: "اکشن" },
@@ -92,11 +96,12 @@ export default async function Home() {
             فیلم‌ها و سریال‌هایت را ردیابی کن
           </h1>
           <p className="text-gray-400 text-lg mb-8 max-w-2xl">
-            به بزرگترین جامعه فارسی‌زبان عاشقان سینما بپیوندید. لیست تماشای خود را بسازید و با دوستانتان به اشتراک بگذارید.
+            خانه فارسی‌زبان علاقه‌مندان فیلم و سریال؛ فهرست تماشایت را
+            بساز، عنوان‌های تازه را کشف کن و مسیر تماشایت را به خاطر بسپار.
           </p>
 
           {/* تغییر دکمه بر اساس وضعیت لاگین */}
-          {session ? (
+          {isLoggedIn ? (
             <Link href="/dashboard">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 px-10 py-6 text-lg rounded-full">
                 رفتن به داشبورد
@@ -130,8 +135,8 @@ export default async function Home() {
           </div>
         </div>
 
-        <Carousel title="⚡ بیشترین بیننده (Binged)" items={popularShows} type="tv" />
-        <Carousel title="⭐ بیشترین اضافه‌شده" items={topRatedShows} type="tv" />
+        <Carousel title="📺 سریال‌های محبوب TMDB" items={popularShows} type="tv" />
+        <Carousel title="⭐ سریال‌های برتر TMDB" items={topRatedShows} type="tv" />
       </div>
     </div>
   );

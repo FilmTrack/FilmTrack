@@ -13,9 +13,22 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "FilmTrack | ردیاب فیلم و سریال",
-  description: "جامعه بزرگ فیلم و سریال فارسی‌زبانان",
-  manifest: "/manifest.json", 
+  metadataBase: new URL("https://www.filmtrack.ir"),
+  title: {
+    default: "FilmTrack | ردیاب فارسی فیلم و سریال",
+    template: "%s | FilmTrack",
+  },
+  description:
+    "فیلم‌ها و سریال‌هایت را کشف و ردیابی کن و فهرست تماشای شخصی خودت را بساز.",
+  manifest: "/manifest.webmanifest",
+  openGraph: {
+    type: "website",
+    locale: "fa_IR",
+    siteName: "FilmTrack",
+    title: "FilmTrack | ردیاب فارسی فیلم و سریال",
+    description:
+      "فیلم‌ها و سریال‌هایت را کشف و ردیابی کن و فهرست تماشای شخصی خودت را بساز.",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
