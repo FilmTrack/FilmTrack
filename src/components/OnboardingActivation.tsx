@@ -35,10 +35,7 @@ export default function OnboardingActivation({
 
   useEffect(() => {
     const normalized = query.trim();
-    if (normalized.length < 2) {
-      setResults([]);
-      return;
-    }
+    if (normalized.length < 2) return;
 
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
@@ -146,7 +143,14 @@ export default function OnboardingActivation({
             <Search className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
             <Input
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => {
+                const nextQuery = event.target.value;
+                setQuery(nextQuery);
+                if (nextQuery.trim().length < 2) {
+                  setResults([]);
+                  setLoading(false);
+                }
+              }}
               placeholder="نام فیلم یا سریال را جستجو کن..."
               className="h-14 border-gray-800 bg-[#171717] pr-12 text-base"
               autoFocus
