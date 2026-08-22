@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import LogoutButton from "./LogoutButton";
 import LiveSearch from "./LiveSearch";
-import Logo from "./Logo"; // اضافه شدن لوگوی جدید
-import { ChevronDown, Film, ListVideo, Tv, Calendar } from "lucide-react";
+import Logo from "./Logo";
+import { ChevronDown, Film, ListVideo, Tv, Calendar, Sparkles } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,13 +20,10 @@ export default async function Navbar() {
   return (
     <header className="w-full border-b border-gray-800 bg-[#0e0e0e]/95 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between p-4 gap-4 md:gap-8">
-        
-        {/* راست: لوگوی جدید و منوها */}
         <div className="flex items-center gap-6">
-          <Logo /> {/* استفاده از لوگوی جدید */}
-          
+          <Logo />
+
           <nav className="hidden md:flex items-center gap-4 text-gray-400 text-sm font-medium">
-            
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-1 hover:text-white transition-colors">
                 <Tv className="w-4 h-4" /> سریال‌ها <ChevronDown className="w-4 h-4" />
@@ -66,6 +63,9 @@ export default async function Navbar() {
               <Calendar className="w-4 h-4" /> تقویم
             </Link>
 
+            <Link href="/plus" className="flex items-center gap-1 text-blue-300 hover:text-blue-200 transition-colors">
+              <Sparkles className="w-4 h-4" /> Plus
+            </Link>
           </nav>
         </div>
 
