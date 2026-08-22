@@ -19,7 +19,7 @@ test("package scripts expose every strict quality gate", () => {
   assert.equal(packageJson.scripts.typecheck, "tsc --noEmit");
   assert.equal(
     packageJson.scripts.test,
-    "node --test tests/title-links.test.mjs tests/quality-config.test.mjs tests/m0-data-boundary.test.mjs tests/product-truth-seo.test.mjs",
+    "node --test tests/title-links.test.mjs tests/quality-config.test.mjs tests/m0-data-boundary.test.mjs tests/product-truth-seo.test.mjs tests/monetization-foundation.test.mjs",
   );
   assert.equal(
     packageJson.scripts.quality,
