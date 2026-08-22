@@ -7,12 +7,14 @@ const read = (path) =>
 
 const [
   actionButtons,
+  watchlistClient,
   commentsSection,
   titlePage,
   dashboard,
   migration,
 ] = await Promise.all([
   read("src/components/ActionButtons.tsx"),
+  read("src/lib/watchlist-client.ts"),
   read("src/components/CommentsSection.tsx"),
   read("src/app/title/[id]/page.tsx"),
   read("src/app/dashboard/page.tsx"),
@@ -31,26 +33,28 @@ test("user_lists media identity includes title_type in migration", () => {
 });
 
 test("watchlist rollout bridge works without schema-specific onConflict targets", () => {
+  assert.match(actionButtons, /saveWatchStatus/);
   assert.doesNotMatch(actionButtons, /\.upsert\s*\(/);
+  assert.doesNotMatch(watchlistClient, /\.upsert\s*\(/);
   assert.match(
-    actionButtons,
+    watchlistClient,
     /const\s+UNIQUE_VIOLATION\s*=\s*['"]23505['"]/,
   );
   assert.match(
-    actionButtons,
-    /\.from\(\s*['"]user_lists['"]\s*\)\s*\n\s*\.insert\(listEntry\)/,
+    watchlistClient,
+    /\.from\(\s*['"]user_lists['"]\s*\)\.insert\(row\)/,
   );
   assert.match(
-    actionButtons,
-    /\.eq\(\s*['"]title_type['"]\s*,\s*type\s*\)/,
+    watchlistClient,
+    /\.eq\(\s*['"]title_type['"]\s*,\s*titleType\s*\)/,
   );
   assert.match(
-    actionButtons,
+    watchlistClient,
     /\(exactRows\?\.length\s*\?\?\s*0\)\s*===\s*0/,
   );
   assert.match(
-    actionButtons,
-    /\.update\(\s*\{\s*title_type:\s*type,\s*status,?\s*\}\s*\)/s,
+    watchlistClient,
+    /\.update\(\{\s*title_type:\s*titleType,\s*status\s*\}\)/,
   );
 });
 
@@ -102,16 +106,7 @@ test("RLS policies and grants are narrowed", () => {
 });
 
 test("migration adds indexes for RLS and title-scoped comments", () => {
-  assert.match(
-    migration,
-    /user_lists_user_id_created_at_idx/i,
-  );
-  assert.match(
-    migration,
-    /comments_user_id_idx/i,
-  );
-  assert.match(
-    migration,
-    /comments_title_identity_created_at_idx/i,
-  );
+  assert.match(migration, /user_lists_user_id_created_at_idx/i);
+  assert.match(migration, /comments_user_id_idx/i);
+  assert.match(migration, /comments_title_identity_created_at_idx/i);
 });
