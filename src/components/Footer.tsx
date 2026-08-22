@@ -1,11 +1,10 @@
 import Link from "next/link";
-import Logo from "./Logo"; // استفاده از لوگوی جدید
+import Logo from "./Logo";
 
 export default function Footer() {
   return (
     <footer className="bg-[#0e0e0e] border-t border-gray-900 mt-20">
       <div className="max-w-7xl mx-auto p-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-gray-400 text-sm">
-        
         <div className="col-span-2 md:col-span-1">
           <Logo />
           <p className="text-xs leading-6 mt-4">خانه فارسی‌زبان علاقه‌مندان فیلم و سریال؛ عنوان‌هایت را کشف و مسیر تماشایت را ثبت کن.</p>
@@ -18,6 +17,7 @@ export default function Footer() {
             <li><Link href="/movies" className="hover:text-blue-500">فیلم‌های محبوب</Link></li>
             <li><Link href="/genres" className="hover:text-blue-500">ژانرها</Link></li>
             <li><Link href="/calendar" className="hover:text-blue-500">تقویم پخش</Link></li>
+            <li><Link href="/plus" className="hover:text-blue-500">FilmTrack Plus</Link></li>
           </ul>
         </div>
 
@@ -41,10 +41,8 @@ export default function Footer() {
             <li><a href="https://www.linkedin.com/in/amirmotefaker/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">لینکدین</a></li>
           </ul>
         </div>
-
       </div>
-      
-      {/* کپی رایت اختصاصی شما */}
+
       <div className="border-t border-gray-900 py-6 text-center text-xs text-gray-600">
         درست شده با عشق ❤️ برای ایرانیان توسط <a href="https://github.com/AmirMotefaker" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">امیر متفکر</a> | FilmTrack
       </div>
