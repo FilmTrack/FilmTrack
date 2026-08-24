@@ -30,30 +30,14 @@ test("user_lists media identity includes title_type in migration", () => {
   );
 });
 
-test("watchlist rollout bridge works without schema-specific onConflict targets", () => {
-  assert.doesNotMatch(actionButtons, /\.upsert\s*\(/);
+test("watchlist writes use canonical three-column identity after M0 closure", () => {
+  assert.doesNotMatch(actionButtons, /UNIQUE_VIOLATION/);
+  assert.doesNotMatch(actionButtons, /legacyUpdateError/);
   assert.match(
     actionButtons,
-    /const\s+UNIQUE_VIOLATION\s*=\s*['"]23505['"]/,
-  );
-  assert.match(
-    actionButtons,
-    /\.from\(\s*['"]user_lists['"]\s*\)\s*\n\s*\.insert\(listEntry\)/,
-  );
-  assert.match(
-    actionButtons,
-    /\.eq\(\s*['"]title_type['"]\s*,\s*type\s*\)/,
-  );
-  assert.match(
-    actionButtons,
-    /\(exactRows\?\.length\s*\?\?\s*0\)\s*===\s*0/,
-  );
-  assert.match(
-    actionButtons,
-    /\.update\(\s*\{\s*title_type:\s*type,\s*status,?\s*\}\s*\)/s,
+    /writeUserListEntry/,
   );
 });
-
 test("comments are type-scoped and no longer persist/display raw email", () => {
   assert.match(
     titlePage,
@@ -115,3 +99,4 @@ test("migration adds indexes for RLS and title-scoped comments", () => {
     /comments_title_identity_created_at_idx/i,
   );
 });
+

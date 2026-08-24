@@ -19,7 +19,7 @@ test("package scripts expose every strict quality gate", () => {
   assert.equal(packageJson.scripts.typecheck, "tsc --noEmit");
   assert.equal(
     packageJson.scripts.test,
-    "node --test tests/title-links.test.mjs tests/quality-config.test.mjs tests/m0-data-boundary.test.mjs tests/product-truth-seo.test.mjs tests/monetization-foundation.test.mjs tests/m0-closure.test.mjs",
+    "node --test tests/title-links.test.mjs tests/quality-config.test.mjs tests/m0-data-boundary.test.mjs tests/product-truth-seo.test.mjs tests/monetization-foundation.test.mjs tests/m0-closure.test.mjs tests/m1-user-list-writer.test.mjs",
   );
   assert.equal(
     packageJson.scripts.quality,
@@ -41,3 +41,4 @@ test("pull-request workflow runs all strict gates", () => {
     assert.match(qualityWorkflow, new RegExp(command.replaceAll(" ", "\\s+")));
   }
 });
+
