@@ -8,6 +8,7 @@ const read = (path) =>
 const [
   actionButtons,
   watchlistClient,
+  userListWriter,
   commentsSection,
   titlePage,
   dashboard,
@@ -15,6 +16,7 @@ const [
 ] = await Promise.all([
   read("src/components/ActionButtons.tsx"),
   read("src/lib/watchlist-client.ts"),
+  read("src/lib/user-lists/write.ts"),
   read("src/components/CommentsSection.tsx"),
   read("src/app/title/[id]/page.tsx"),
   read("src/app/dashboard/page.tsx"),
@@ -32,32 +34,16 @@ test("user_lists media identity includes title_type in migration", () => {
   );
 });
 
-test("watchlist rollout bridge works without schema-specific onConflict targets", () => {
+test("watchlist writes use canonical three-column identity after M0 closure", () => {
   assert.match(actionButtons, /saveWatchStatus/);
-  assert.doesNotMatch(actionButtons, /\.upsert\s*\(/);
-  assert.doesNotMatch(watchlistClient, /\.upsert\s*\(/);
+  assert.match(watchlistClient, /writeUserListEntry/);
+  assert.doesNotMatch(watchlistClient, /UNIQUE_VIOLATION/);
+  assert.doesNotMatch(watchlistClient, /legacyUpdateError/);
   assert.match(
-    watchlistClient,
-    /const\s+UNIQUE_VIOLATION\s*=\s*['"]23505['"]/,
-  );
-  assert.match(
-    watchlistClient,
-    /\.from\(\s*['"]user_lists['"]\s*\)\.insert\(row\)/,
-  );
-  assert.match(
-    watchlistClient,
-    /\.eq\(\s*['"]title_type['"]\s*,\s*titleType\s*\)/,
-  );
-  assert.match(
-    watchlistClient,
-    /\(exactRows\?\.length\s*\?\?\s*0\)\s*===\s*0/,
-  );
-  assert.match(
-    watchlistClient,
-    /\.update\(\{\s*title_type:\s*titleType,\s*status\s*\}\)/,
+    userListWriter,
+    /onConflict:\s*["']user_id,title_id,title_type["']/,
   );
 });
-
 test("comments are type-scoped and no longer persist/display raw email", () => {
   assert.match(
     titlePage,

@@ -46,9 +46,10 @@ test("M1 exposes the five canonical watch states through one writer", () => {
     "on_hold",
     "dropped",
   ]) {
-    assert.match(watchlist, new RegExp(`"${status}"`));
     assert.match(actions, new RegExp(`status: "${status}"`));
   }
+
   assert.match(actions, /saveWatchStatus/);
-  assert.match(watchlist, /UNIQUE_VIOLATION/);
+  assert.match(watchlist, /writeUserListEntry/);
+  assert.doesNotMatch(watchlist, /UNIQUE_VIOLATION/);
 });
