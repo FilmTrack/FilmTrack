@@ -39,8 +39,8 @@ test("bulk writer preserves database-backed domain rules", () => {
   assert.match(types, /"dropped"/)
 })
 
-test("single-title UI reuses the shared writer", () => {
-  assert.match(actionButtons, /writeUserListEntry/)
+test("single-title UI reuses the shared writer through the watchlist adapter", () => {
+  assert.match(actionButtons, /saveWatchStatus/)
   assert.doesNotMatch(actionButtons, /\.from\(\s*["']user_lists["']\s*\)/)
   assert.doesNotMatch(actionButtons, /23505/)
 })

@@ -7,12 +7,16 @@ const read = (path) =>
 
 const [
   actionButtons,
+  watchlistClient,
+  userListWriter,
   commentsSection,
   titlePage,
   dashboard,
   migration,
 ] = await Promise.all([
   read("src/components/ActionButtons.tsx"),
+  read("src/lib/watchlist-client.ts"),
+  read("src/lib/user-lists/write.ts"),
   read("src/components/CommentsSection.tsx"),
   read("src/app/title/[id]/page.tsx"),
   read("src/app/dashboard/page.tsx"),
@@ -31,11 +35,13 @@ test("user_lists media identity includes title_type in migration", () => {
 });
 
 test("watchlist writes use canonical three-column identity after M0 closure", () => {
-  assert.doesNotMatch(actionButtons, /UNIQUE_VIOLATION/);
-  assert.doesNotMatch(actionButtons, /legacyUpdateError/);
+  assert.match(actionButtons, /saveWatchStatus/);
+  assert.match(watchlistClient, /writeUserListEntry/);
+  assert.doesNotMatch(watchlistClient, /UNIQUE_VIOLATION/);
+  assert.doesNotMatch(watchlistClient, /legacyUpdateError/);
   assert.match(
-    actionButtons,
-    /writeUserListEntry/,
+    userListWriter,
+    /onConflict:\s*["']user_id,title_id,title_type["']/,
   );
 });
 test("comments are type-scoped and no longer persist/display raw email", () => {
@@ -86,17 +92,7 @@ test("RLS policies and grants are narrowed", () => {
 });
 
 test("migration adds indexes for RLS and title-scoped comments", () => {
-  assert.match(
-    migration,
-    /user_lists_user_id_created_at_idx/i,
-  );
-  assert.match(
-    migration,
-    /comments_user_id_idx/i,
-  );
-  assert.match(
-    migration,
-    /comments_title_identity_created_at_idx/i,
-  );
+  assert.match(migration, /user_lists_user_id_created_at_idx/i);
+  assert.match(migration, /comments_user_id_idx/i);
+  assert.match(migration, /comments_title_identity_created_at_idx/i);
 });
-
