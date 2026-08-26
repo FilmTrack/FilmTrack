@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="120" fill="#0E0E0E"/>
+  <defs>
+    <linearGradient id="filmtrack-icon-gradient" x1="92" y1="84" x2="424" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00D1FF"/>
+      <stop offset="0.52" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#A855F7"/>
+    </linearGradient>
+  </defs>
+  <path d="M159 89C126.415 70.5704 86 94.0982 86 131.538V380.462C86 417.902 126.415 441.43 159 422.999L370.789 303.536C404.023 284.798 404.023 237.202 370.789 218.464L159 89Z" stroke="url(#filmtrack-icon-gradient)" stroke-width="34" stroke-linejoin="round"/>
+  <path d="M206 181.516C188.671 171.507 167 184.012 167 204.021V307.979C167 327.988 188.671 340.493 206 330.484L296.5 278.526C313.833 268.514 313.833 243.486 296.5 233.474L206 181.516Z" fill="url(#filmtrack-icon-gradient)"/>
+</svg>
