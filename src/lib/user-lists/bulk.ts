@@ -6,20 +6,33 @@ export type BulkUserListEntry = {
   titleType: "movie" | "tv";
 };
 
+function normalizeEntries(entries: BulkUserListEntry[]) {
+  const seen = new Set<string>();
+
+  return entries.filter((entry) => {
+    const key = `${entry.titleType}:${entry.titleId}`;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
 export async function bulkWriteUserListEntries(
   entries: BulkUserListEntry[],
   status: WatchStatus = "plan_to_watch",
 ) {
-  const results = [];
+  const normalizedEntries = normalizeEntries(entries);
 
-  for (const entry of entries) {
-    results.push(
-      await writeUserListEntry({
+  return Promise.all(
+    normalizedEntries.map((entry) =>
+      writeUserListEntry({
         ...entry,
         status,
       }),
-    );
-  }
-
-  return results;
+    ),
+  );
 }
