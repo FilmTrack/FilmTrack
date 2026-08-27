@@ -1,0 +1,28 @@
+# Vercel post-transfer hook verification
+
+Tracking: #26
+
+This document records the zero-downtime verification probe after transferring the canonical repository from `AmirMotefaker/FilmTrack` to `FilmTrack/FilmTrack` and reconnecting the existing Vercel project.
+
+## Purpose
+
+Trigger one documentation-only commit through the canonical GitHub organization so the existing Vercel project can prove that Git push / pull-request / main-branch deployment hooks still work after the repository ownership transfer.
+
+## Safety boundary
+
+- No runtime application code changes.
+- No database or Supabase changes.
+- No authentication changes.
+- No payment changes.
+- No domain changes.
+- No new Vercel project.
+- Existing `filmtrack.ir` and `www.filmtrack.ir` production domains must remain attached to the current project.
+
+## Acceptance evidence
+
+- PR preview event is received by the existing Vercel project.
+- Merge to `main` triggers a new production deployment from `FilmTrack/FilmTrack`.
+- Production deployment becomes READY.
+- `filmtrack.ir` continues redirecting to `www.filmtrack.ir`.
+- `www.filmtrack.ir` returns HTTP 200.
+- GitHub integration metadata reflects the canonical organization path on the new deployment.
