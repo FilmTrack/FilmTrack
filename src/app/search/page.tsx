@@ -1,5 +1,5 @@
 import SearchResultsGrid from "@/components/search/SearchResultsGrid";
-import { fetchJson, type TmdbMediaSummary, type TmdbSearchResponse } from "@/lib/tmdb";
+import { fetchJson, type TmdbMediaSummary } from "@/lib/tmdb";
 
 export default async function SearchPage({
   searchParams,
@@ -12,11 +12,11 @@ export default async function SearchPage({
   let results: TmdbMediaSummary[] = [];
 
   if (query) {
-    const data = await fetchJson<TmdbSearchResponse>(
+    const data = await fetchJson<TmdbMediaSummary[]>(
       `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/api/search?q=${encodeURIComponent(query)}`,
     );
 
-    results = data?.results ?? [];
+    results = data ?? [];
   }
 
   return (
