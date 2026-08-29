@@ -7,3 +7,4 @@ export * from "./persist";
 export * from "./providers/tv-time";
 export * from "./providers/letterboxd";
 export * from "./providers/trakt";
+export * from "./parsers";
