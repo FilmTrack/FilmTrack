@@ -1,14 +1,39 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 import TmdbImage from "@/components/TmdbImage";
+
 type TMDBResult = {
   id: number;
   poster_path: string | null;
   backdrop_path?: string | null;
   name?: string;
   title?: string;
+};
+
+const homeTitle = "FilmTrack | ردیاب فارسی فیلم و سریال";
+const homeDescription =
+  "فیلم‌ها و سریال‌هایت را در FilmTrack کشف و ردیابی کن، وضعیت تماشا را ثبت کن و فهرست و تاریخچه شخصی خودت را بساز.";
+
+export const metadata: Metadata = {
+  title: homeTitle,
+  description: homeDescription,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    title: homeTitle,
+    description: homeDescription,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: homeTitle,
+    description: homeDescription,
+  },
 };
 
 async function fetchTMDB(endpoint: string) {
@@ -32,7 +57,7 @@ const Carousel = ({ title, items, type }: { title: string; items: TMDBResult[]; 
   return (
     <div className="mb-12">
       <h2 className="text-xl font-bold text-white mb-4 pr-1">{title}</h2>
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {items.slice(0, 20).map((item) => (
           <Link href={`/title/${item.id}?type=${type}`} key={item.id} className="flex-shrink-0 w-32 md:w-40 group">
             <div className="w-full h-48 md:h-60 bg-gray-800 rounded-lg overflow-hidden transition-transform group-hover:scale-105 shadow-lg">
@@ -62,7 +87,6 @@ export default async function Home() {
     fetchTMDB("/tv/top_rated"),
   ]);
 
-  // بررسی وضعیت لاگین کاربر
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const isLoggedIn = Boolean(claimsData?.claims?.sub);
@@ -78,8 +102,6 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen text-white">
-
-      {/* بخش Hero */}
       <div className="relative h-[50vh] min-h-[400px] w-full overflow-hidden mb-12">
         {trendingMovies[0] && (
           <div className="absolute inset-0">
@@ -100,7 +122,6 @@ export default async function Home() {
             بساز، عنوان‌های تازه را کشف کن و مسیر تماشایت را به خاطر بسپار.
           </p>
 
-          {/* تغییر دکمه بر اساس وضعیت لاگین */}
           {isLoggedIn ? (
             <Link href="/dashboard">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 px-10 py-6 text-lg rounded-full">
@@ -117,7 +138,6 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* بخش دسته‌بندی‌ها */}
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <Carousel title="🔥 سریال‌های ترند هفته" items={trendingShows} type="tv" />
         <Carousel title="🎬 فیلم‌های ترند هفته" items={trendingMovies} type="movie" />

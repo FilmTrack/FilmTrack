@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer"; // اضافه شد
+import Footer from "@/components/Footer";
 
-export const dynamic = 'force-dynamic'; // این خط را اضافه کنید
+export const dynamic = "force-dynamic";
 
 const vazirmatn = Vazirmatn({
   subsets: ["arabic", "latin"],
@@ -12,35 +12,93 @@ const vazirmatn = Vazirmatn({
   variable: "--font-vazirmatn",
 });
 
+const siteUrl = "https://www.filmtrack.ir";
+const siteTitle = "FilmTrack | ردیاب فارسی فیلم و سریال";
+const siteDescription =
+  "فیلم‌ها و سریال‌هایت را در FilmTrack کشف و ردیابی کن، وضعیت تماشا را ثبت کن و فهرست و تاریخچه شخصی خودت را بساز.";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.filmtrack.ir"),
+  metadataBase: new URL(siteUrl),
+  applicationName: "FilmTrack",
   title: {
-    default: "FilmTrack | ردیاب فارسی فیلم و سریال",
+    default: siteTitle,
     template: "%s | FilmTrack",
   },
-  description:
-    "فیلم‌ها و سریال‌هایت را کشف و ردیابی کن و فهرست تماشای شخصی خودت را بساز.",
+  description: siteDescription,
+  authors: [{ name: "FilmTrack", url: "https://github.com/FilmTrack" }],
+  creator: "FilmTrack",
+  publisher: "FilmTrack",
   manifest: "/manifest.webmanifest",
   openGraph: {
     type: "website",
     locale: "fa_IR",
     siteName: "FilmTrack",
-    title: "FilmTrack | ردیاب فارسی فیلم و سریال",
-    description:
-      "فیلم‌ها و سریال‌هایت را کشف و ردیابی کن و فهرست تماشای شخصی خودت را بساز.",
+    title: siteTitle,
+    description: siteDescription,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'FilmTrack',
+    statusBarStyle: "black-translucent",
+    title: "FilmTrack",
   },
 };
 
 export const viewport = {
-  themeColor: '#0e0e0e',
-  width: 'device-width',
+  themeColor: "#0e0e0e",
+  width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "FilmTrack",
+      url: siteUrl,
+      logo: `${siteUrl}/brand/filmtrack-play.svg`,
+      sameAs: ["https://github.com/FilmTrack"],
+      founder: {
+        "@type": "Person",
+        "@id": "https://amirmotefaker.ir/#person",
+        name: "امیر متفکر",
+        url: "https://amirmotefaker.ir",
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: "FilmTrack",
+      url: siteUrl,
+      inLanguage: "fa-IR",
+      description: siteDescription,
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${siteUrl}/search?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -50,12 +108,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable}>
-      <body suppressHydrationWarning className={`${vazirmatn.className} min-h-screen flex flex-col antialiased bg-[#0e0e0e]`}>
-        <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer /> {/* اضافه شد */}
+      <body
+        suppressHydrationWarning
+        className={`${vazirmatn.className} min-h-screen bg-[#0e0e0e] antialiased`}
+      >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+        <div className="flex min-h-screen flex-col">
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );

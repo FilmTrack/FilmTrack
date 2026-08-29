@@ -23,7 +23,6 @@ export default function LiveSearch() {
   const searchRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
-  // Debounce: صبر می‌کند تا کاربر تایپ کردن را متوقف کند
   useEffect(() => {
     const normalizedQuery = query.trim()
     if (normalizedQuery.length < 2) return undefined
@@ -53,7 +52,7 @@ export default function LiveSearch() {
           setIsLoading(false)
         }
       }
-    }, 300) // 300 میلی‌ثانیه تاخیر
+    }, 300)
 
     return () => {
       clearTimeout(delayDebounceFn)
@@ -61,7 +60,6 @@ export default function LiveSearch() {
     }
   }, [query])
 
-  // بستن منو با کلیک خارج از آن
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -73,11 +71,12 @@ export default function LiveSearch() {
   }, [])
 
   return (
-    <div ref={searchRef} className="relative w-64 lg:w-72">
-      <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-      <Input 
-        placeholder="جستجوی فیلم یا سریال..." 
-        className="bg-[#1a1a1a] border-gray-800 text-white placeholder:text-gray-500 pr-10 focus-visible:ring-blue-600"
+    <div ref={searchRef} className="relative w-full md:w-64 lg:w-72">
+      <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+      <Input
+        aria-label="جستجوی فیلم یا سریال"
+        placeholder="جستجوی فیلم یا سریال..."
+        className="h-11 bg-[#1a1a1a] pr-10 text-white placeholder:text-gray-500 focus-visible:ring-blue-600"
         value={query}
         onChange={(e) => {
           const nextQuery = e.target.value
@@ -91,43 +90,46 @@ export default function LiveSearch() {
         }}
         onFocus={() => setShowResults(true)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' && query.trim()) {
-            router.push(`/search?q=${query}`)
+          if (e.key === "Enter" && query.trim()) {
+            router.push(`/search?q=${encodeURIComponent(query.trim())}`)
             setShowResults(false)
           }
         }}
       />
 
-      {/* منوی کشویی نتایج */}
       {showResults && query.trim().length >= 2 && (
-        <div className="absolute top-full mt-2 w-full bg-[#1a1a1a] border border-gray-800 rounded-lg shadow-2xl overflow-hidden z-50">
+        <div className="absolute top-full z-50 mt-2 w-full overflow-hidden rounded-lg border border-gray-800 bg-[#1a1a1a] shadow-2xl">
           {isLoading ? (
-            <div className="p-4 text-center text-gray-400 text-sm">در حال جستجو...</div>
+            <div className="p-4 text-center text-sm text-gray-400">در حال جستجو...</div>
           ) : results.length === 0 ? (
-            <div className="p-4 text-center text-gray-400 text-sm">نتیجه‌ای یافت نشد.</div>
+            <div className="p-4 text-center text-sm text-gray-400">نتیجه‌ای یافت نشد.</div>
           ) : (
-            <ul className="max-h-[400px] overflow-y-auto">
+            <ul className="max-h-[min(60vh,400px)] overflow-y-auto">
               {results.map((item) => (
-                <Link 
-                  href={`/title/${item.id}?type=${item.media_type}`} 
-                  key={item.id}
-                  onClick={() => {
-                    setShowResults(false)
-                    setQuery("")
-                  }}
-                >
-                  <li className="flex items-center gap-3 p-2 hover:bg-gray-800 transition-colors cursor-pointer">
-                    <div className="w-10 h-14 bg-gray-700 rounded overflow-hidden flex-shrink-0">
+                <li key={`${item.media_type}:${item.id}`}>
+                  <Link
+                    href={`/title/${item.id}?type=${item.media_type}`}
+                    className="flex min-h-16 items-center gap-3 p-2 transition-colors hover:bg-gray-800 focus-visible:bg-gray-800 focus-visible:outline-none"
+                    onClick={() => {
+                      setShowResults(false)
+                      setQuery("")
+                    }}
+                  >
+                    <div className="h-14 w-10 flex-shrink-0 overflow-hidden rounded bg-gray-700">
                       {item.poster_path && (
-                        <TmdbImage src={`https://image.tmdb.org/t/p/w92${item.poster_path}`} alt={item.title || item.name || "Search result"} className="w-full h-full object-cover" />
+                        <TmdbImage
+                          src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
+                          alt={item.title || item.name || "Search result"}
+                          className="h-full w-full object-cover"
+                        />
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm font-medium truncate">{item.title || item.name}</p>
-                      <p className="text-gray-500 text-xs">{item.media_type === 'tv' ? 'سریال' : 'فیلم'}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-white">{item.title || item.name}</p>
+                      <p className="text-xs text-gray-500">{item.media_type === "tv" ? "سریال" : "فیلم"}</p>
                     </div>
-                  </li>
-                </Link>
+                  </Link>
+                </li>
               ))}
             </ul>
           )}
