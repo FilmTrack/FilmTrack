@@ -21,7 +21,7 @@ test("Phase C documents truthful image and AI citation contracts", () => {
 });
 
 test("existing title page exposes visible identity-backed image alternatives", () => {
-  assert.match(titlePage, /alt=\{title\}/);
+  assert.match(titlePage, /alt=\{`پوستر \$\{faTitle\}`\}/);
   assert.match(titlePage, /alt=\{member\.name\}/);
 });
 
@@ -35,4 +35,23 @@ test("Phase C defines Search Console and mobile release measurement", () => {
 test("Phase C preserves production safety boundaries", () => {
   assert.match(contract, /no database migration/i);
   assert.match(contract, /no changes to Supabase, authentication, payment, production domains/i);
+});
+
+test("title page links visible genres to canonical discovery hubs", () => {
+  assert.match(titlePage, /href=\{`\/genre\/\$\{genre\.id\}`\}/);
+  assert.match(titlePage, /aria-label="ژانرهای این عنوان"/);
+  assert.match(titlePage, /focus-visible:ring-2/);
+});
+
+test("poster and backdrop semantics distinguish content from decoration", () => {
+  assert.match(titlePage, /alt=\{`پوستر \$\{faTitle\}`\}/);
+  assert.match(
+    titlePage,
+    /src=\{`https:\/\/image\.tmdb\.org\/t\/p\/original\$\{data\.backdrop_path\}`\}[\s\S]*?alt=""/,
+  );
+});
+
+test("genre discovery remains human-visible rather than hidden SEO copy", () => {
+  assert.doesNotMatch(titlePage, /display:\s*none|visibility:\s*hidden/);
+  assert.match(titlePage, /\{genre\.name\}/);
 });

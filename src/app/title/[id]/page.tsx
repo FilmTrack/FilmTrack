@@ -183,7 +183,7 @@ export default async function TitlePage({ params, searchParams }: TitlePageProps
         {data.backdrop_path && (
           <TmdbImage
             src={`https://image.tmdb.org/t/p/original${data.backdrop_path}`}
-            alt={title}
+            alt=""
             className="w-full h-full object-cover opacity-20"
           />
         )}
@@ -204,7 +204,7 @@ export default async function TitlePage({ params, searchParams }: TitlePageProps
               {data.poster_path && (
                 <TmdbImage
                   src={`https://image.tmdb.org/t/p/w500${data.poster_path}`}
-                  alt={title}
+                  alt={`پوستر ${faTitle}`}
                   className="w-full h-full object-cover"
                 />
               )}
@@ -275,17 +275,25 @@ export default async function TitlePage({ params, searchParams }: TitlePageProps
               </a>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <nav
+              aria-label="ژانرهای این عنوان"
+              className="flex flex-wrap gap-2"
+            >
               {data.genres?.map((genre) => (
-                <Badge
+                <Link
                   key={genre.id}
-                  variant="secondary"
-                  className="bg-gray-800 text-gray-300"
+                  href={`/genre/${genre.id}`}
+                  className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
-                  {genre.name}
-                </Badge>
+                  <Badge
+                    variant="secondary"
+                    className="bg-gray-800 text-gray-300 transition-colors hover:bg-gray-700 hover:text-white"
+                  >
+                    {genre.name}
+                  </Badge>
+                </Link>
               ))}
-            </div>
+            </nav>
 
             {trailer && (
               <a
