@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/title-links.test.mjs tests/quality-config.test.mjs tests/m0-data-boundary.test.mjs tests/product-truth-seo.test.mjs tests/monetization-foundation.test.mjs tests/m0-closure.test.mjs tests/m1-activation.test.mjs tests/m1-user-list-writer.test.mjs tests/m1-bulk-add.test.mjs tests/m1-bulk-writer.test.mjs tests/m1-search-contract.test.mjs tests/growth-2026-foundation.test.mjs tests/production-seo-verification.test.mjs",
+    "test": "node --test tests/title-links.test.mjs tests/quality-config.test.mjs tests/m0-data-boundary.test.mjs tests/product-truth-seo.test.mjs tests/monetization-foundation.test.mjs tests/m0-closure.test.mjs tests/m1-activation.test.mjs tests/m1-user-list-writer.test.mjs tests/m1-bulk-add.test.mjs tests/m1-bulk-writer.test.mjs tests/m1-search-contract.test.mjs tests/growth-2026-foundation.test.mjs tests/production-seo-verification.test.mjs tests/seo-phase-b-entity-surfaces.test.mjs",
     "quality": "npm run lint && npm run typecheck && npm test && npm run build",
     "verify:production-seo": "node scripts/verify-production-seo.mjs"
   },
