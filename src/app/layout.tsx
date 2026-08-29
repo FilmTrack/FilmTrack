@@ -25,16 +25,12 @@ export const metadata: Metadata = {
     template: "%s | FilmTrack",
   },
   description: siteDescription,
-  alternates: {
-    canonical: "/",
-  },
   authors: [{ name: "FilmTrack", url: "https://github.com/FilmTrack" }],
   creator: "FilmTrack",
   publisher: "FilmTrack",
   manifest: "/manifest.webmanifest",
   openGraph: {
     type: "website",
-    url: siteUrl,
     locale: "fa_IR",
     siteName: "FilmTrack",
     title: siteTitle,
@@ -69,34 +65,41 @@ export const viewport = {
   initialScale: 1,
 };
 
-const structuredData = [
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "FilmTrack",
-    url: siteUrl,
-    inLanguage: "fa-IR",
-    description: siteDescription,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${siteUrl}/search?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "FilmTrack",
+      url: siteUrl,
+      logo: `${siteUrl}/brand/filmtrack-play.svg`,
+      sameAs: ["https://github.com/FilmTrack"],
+      founder: {
+        "@type": "Person",
+        "@id": "https://amirmotefaker.ir/#person",
+        name: "امیر متفکر",
+        url: "https://amirmotefaker.ir",
+      },
     },
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "FilmTrack",
-    url: siteUrl,
-    logo: `${siteUrl}/brand/filmtrack-play.svg`,
-    sameAs: ["https://github.com/FilmTrack"],
-    founder: {
-      "@type": "Person",
-      name: "امیر متفکر",
-      url: "https://amirmotefaker.ir",
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: "FilmTrack",
+      url: siteUrl,
+      inLanguage: "fa-IR",
+      description: siteDescription,
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${siteUrl}/search?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
     },
-  },
-];
+  ],
+};
 
 export default function RootLayout({
   children,

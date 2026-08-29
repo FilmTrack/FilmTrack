@@ -5,8 +5,9 @@ import test from "node:test";
 const read = (path) =>
   readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-const [layout, footer, robots, navbar, liveSearch, packageJsonRaw] = await Promise.all([
+const [layout, home, footer, robots, navbar, liveSearch, packageJsonRaw] = await Promise.all([
   read("src/app/layout.tsx"),
+  read("src/app/page.tsx"),
   read("src/components/Footer.tsx"),
   read("src/app/robots.ts"),
   read("src/components/Navbar.tsx"),
@@ -17,11 +18,20 @@ const [layout, footer, robots, navbar, liveSearch, packageJsonRaw] = await Promi
 const packageJson = JSON.parse(packageJsonRaw);
 
 test("public SEO metadata declares canonical FilmTrack entity signals", () => {
-  assert.match(layout, /alternates:\s*\{[\s\S]*canonical:\s*"\/"/);
+  assert.doesNotMatch(layout, /alternates:\s*\{[\s\S]*canonical:\s*"\/"/);
+  assert.match(home, /alternates:\s*\{[\s\S]*canonical:\s*"\/"/);
+  assert.match(layout, /"@graph"/);
   assert.match(layout, /"@type":\s*"WebSite"/);
   assert.match(layout, /"@type":\s*"Organization"/);
+  assert.match(layout, /"@id":\s*`\$\{siteUrl\}\/\#organization`/);
   assert.match(layout, /SearchAction/);
   assert.match(layout, /https:\/\/www\.filmtrack\.ir/);
+});
+
+test("homepage owns its canonical and social URL instead of leaking root canonical to every route", () => {
+  assert.match(home, /canonical:\s*"\/"/);
+  assert.match(home, /openGraph:\s*\{[\s\S]*url:\s*"\/"/);
+  assert.doesNotMatch(layout, /openGraph:\s*\{[\s\S]*url:\s*siteUrl/);
 });
 
 test("AI search crawler can access public pages without exposing private surfaces", () => {
