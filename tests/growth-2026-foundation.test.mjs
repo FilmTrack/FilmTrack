@@ -31,7 +31,7 @@ test("public SEO metadata declares canonical FilmTrack entity signals", () => {
 test("homepage owns its canonical and social URL instead of leaking root canonical to every route", () => {
   assert.match(home, /canonical:\s*"\/"/);
   assert.match(home, /openGraph:\s*\{[\s\S]*url:\s*"\/"/);
-  assert.doesNotMatch(layout, /openGraph:\s*\{[\s\S]*url:\s*siteUrl/);
+  assert.doesNotMatch(layout, /alternates:\s*\{/);
 });
 
 test("AI search crawler can access public pages without exposing private surfaces", () => {
