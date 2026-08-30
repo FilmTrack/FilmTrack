@@ -18,20 +18,34 @@ const runbook = await readFile(
   "utf8",
 );
 
+function tableDefinition(tableName) {
+  const match = migration.match(
+    new RegExp(
+      `create table if not exists public\\.${tableName}\\s*\\(([\\s\\S]*?)\\n\\);`,
+      "i",
+    ),
+  );
+
+  assert.ok(match, `Expected ${tableName} table definition`);
+  return match[1];
+}
+
 test("M2 rating identity is canonical and bounded", () => {
-  assert.match(migration, /create table if not exists public\.user_ratings/i);
+  const ratingsTable = tableDefinition("user_ratings");
+
   assert.match(
-    migration,
+    ratingsTable,
     /unique\s*\(user_id,\s*title_id,\s*title_type\)/i,
   );
-  assert.match(migration, /rating_10 between 1 and 10/i);
-  assert.match(migration, /title_type in \('movie', 'tv'\)/i);
+  assert.match(ratingsTable, /rating_10 between 1 and 10/i);
+  assert.match(ratingsTable, /title_type in \('movie', 'tv'\)/i);
 });
 
 test("M2 diary preserves multiple watches and private ownership", () => {
-  assert.match(migration, /create table if not exists public\.diary_entries/i);
+  const diaryTable = tableDefinition("diary_entries");
+
   assert.doesNotMatch(
-    migration,
+    diaryTable,
     /unique\s*\(user_id,\s*title_id,\s*title_type\)/i,
   );
   assert.match(
