@@ -8,7 +8,7 @@ const [layout, entitySeo, titlePage, navbar, footer, manifest] = await Promise.a
   readFile(new URL("../src/app/title/[id]/page.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/components/Navbar.tsx", import.meta.url), "utf8"),
   readFile(new URL("../src/components/Footer.tsx", import.meta.url), "utf8"),
-  readFile(new URL("../public/manifest.webmanifest", import.meta.url), "utf8"),
+  readFile(new URL("../src/app/manifest.ts", import.meta.url), "utf8"),
 ]);
 
 test("root layout is the sole HTML page-title brand suffix authority", () => {
@@ -35,8 +35,10 @@ test("mobile navigation and founder attribution remain production-visible", () =
 });
 
 test("PWA manifest remains installed and mobile-oriented", () => {
-  const parsed = JSON.parse(manifest);
-  assert.equal(parsed.display, "standalone");
-  assert.ok(parsed.name || parsed.short_name);
-  assert.ok(Array.isArray(parsed.icons) && parsed.icons.length > 0);
+  assert.match(manifest, /MetadataRoute\.Manifest/);
+  assert.match(manifest, /display:\s*"standalone"/);
+  assert.match(manifest, /short_name:\s*"FilmTrack"/);
+  assert.match(manifest, /src:\s*"\/icon-192\.png"/);
+  assert.match(manifest, /src:\s*"\/icon-512\.png"/);
+  assert.match(manifest, /purpose:\s*"maskable"/);
 });
