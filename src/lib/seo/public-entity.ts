@@ -65,7 +65,8 @@ export function buildTitleMetadata({
   const poster = data.poster_path ? `${TMDB_IMAGE_BASE_URL}${data.poster_path}` : undefined;
 
   return {
-    title: `${title} | ${kindLabel} | FilmTrack`,
+    // Root layout owns the final `| FilmTrack` suffix through its title template.
+    title: `${title} | ${kindLabel}`,
     description,
     alternates: { canonical },
     openGraph: {
@@ -169,27 +170,29 @@ export function buildGenreMetadata(id: string | number, page?: number): Metadata
   const genreName = getGenreName(id);
   const canonical = canonicalGenreUrl(id);
   const isPaginated = typeof page === "number" && page > 0;
-  const title = isPaginated
-    ? `فیلم‌های ژانر ${genreName} – صفحه ${page} | FilmTrack`
-    : `بهترین فیلم‌های ژانر ${genreName} | FilmTrack`;
+  const pageTitle = isPaginated
+    ? `فیلم‌های ژانر ${genreName} – صفحه ${page}`
+    : `بهترین فیلم‌های ژانر ${genreName}`;
+  const socialTitle = `${pageTitle} | FilmTrack`;
   const description = `فیلم‌های محبوب و برتر ژانر ${genreName} را در FilmTrack کشف و دنبال کنید.`;
 
   return {
-    title,
+    // Root layout appends the brand once; social cards own their complete title.
+    title: pageTitle,
     description,
     alternates: { canonical },
     robots: isPaginated ? { index: false, follow: true } : undefined,
     openGraph: {
       type: "website",
       url: canonical,
-      title,
+      title: socialTitle,
       description,
       siteName: "FilmTrack",
       locale: "fa_IR",
     },
     twitter: {
       card: "summary",
-      title,
+      title: socialTitle,
       description,
     },
   };
