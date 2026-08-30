@@ -5,7 +5,13 @@ export type ProductEvent =
   | "title_viewed"
   | "watchlist_added"
   | "import_started"
-  | "import_completed";
+  | "import_completed"
+  | "rating_created"
+  | "rating_updated"
+  | "rating_removed"
+  | "diary_entry_created"
+  | "diary_entry_removed"
+  | "rewatch_recorded";
 
 export async function trackProductEvent(
   event: ProductEvent,
