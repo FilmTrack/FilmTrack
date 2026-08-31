@@ -60,9 +60,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#0e0e0e",
+  themeColor: "#050914",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 const structuredData = {
@@ -110,15 +111,15 @@ export default function RootLayout({
     <html lang="fa" dir="rtl" className={vazirmatn.variable}>
       <body
         suppressHydrationWarning
-        className={`${vazirmatn.className} min-h-screen bg-[#0e0e0e] antialiased`}
+        className={`${vazirmatn.className} min-h-screen overflow-x-hidden bg-[#050914] text-white antialiased selection:bg-blue-500/30 selection:text-white`}
       >
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        <div className="flex min-h-screen flex-col">
+        <div className="flex min-h-screen flex-col bg-[#050914]">
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <div className="flex-1">{children}</div>
           <Footer />
         </div>
       </body>
