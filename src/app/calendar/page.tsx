@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CalendarDays, Film, Sparkles, Tv } from "lucide-react";
 
 import TmdbImage from "@/components/TmdbImage";
+import { demoCalendarItems, isLocalVisualQa } from "@/lib/demo-catalog";
 import {
   fetchJson,
   type TmdbMediaSummary,
@@ -52,9 +53,11 @@ export default async function CalendarPage() {
     .filter((show) => Boolean(show.first_air_date))
     .map((show) => ({ ...show, type: "tv", date: show.first_air_date ?? "" }));
 
-  const combinedReleases = [...movieReleases, ...showReleases].sort(
+  const liveReleases = [...movieReleases, ...showReleases].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
+  const combinedReleases = liveReleases.length ? liveReleases : isLocalVisualQa ? demoCalendarItems() : [];
+  const isDemo = liveReleases.length === 0 && isLocalVisualQa;
 
   const formatPersianDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString("fa-IR", {
@@ -74,6 +77,11 @@ export default async function CalendarPage() {
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">
             فیلم‌ها و سریال‌هایی را که در روزهای پیش رو منتشر می‌شوند یک‌جا ببین و برای تماشایشان آماده باش.
           </p>
+          {isDemo && (
+            <p className="mt-4 inline-flex rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1.5 text-xs font-bold text-violet-200">
+              حالت نمایشی محلی برای بررسی تقویم و کارت‌ها
+            </p>
+          )}
         </div>
       </section>
 
@@ -86,12 +94,8 @@ export default async function CalendarPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {combinedReleases.map((item) => (
-              <Link
-                href={`/title/${item.id}?type=${item.type}`}
-                key={`${item.id}-${item.type}`}
-                className="group min-w-0"
-              >
+            {combinedReleases.map((item, index) => (
+              <Link href={`/title/${item.id}?type=${item.type}`} key={`${item.id}-${item.type}`} className="group min-w-0">
                 <article className="relative aspect-[2/3] overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220] shadow-lg shadow-black/20 transition duration-300 group-hover:-translate-y-1 group-hover:border-blue-400/30">
                   {item.poster_path ? (
                     <TmdbImage
@@ -100,7 +104,13 @@ export default async function CalendarPage() {
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-slate-500">بدون پوستر</div>
+                    <div className="flex h-full flex-col justify-between bg-[radial-gradient(circle_at_68%_20%,rgba(59,130,246,.3),transparent_30%),linear-gradient(150deg,#101d37,#080d19_62%,#21113e)] p-4">
+                      <span className="text-xs font-black text-blue-200">هفته پیش رو</span>
+                      <div>
+                        <span className="text-4xl font-black text-white/10">{String(index + 1).padStart(2, "0")}</span>
+                        <p className="mt-2 text-lg font-black leading-7">{item.title || item.name}</p>
+                      </div>
+                    </div>
                   )}
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/60 to-transparent" />
                   <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/60 px-2 py-1 text-[11px] font-bold text-white backdrop-blur">
