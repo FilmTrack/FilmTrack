@@ -17,10 +17,34 @@ const qualityWorkflow = await readFile(
 test("package scripts expose every strict quality gate", () => {
   assert.equal(packageJson.scripts.lint, "eslint --max-warnings=0");
   assert.equal(packageJson.scripts.typecheck, "tsc --noEmit");
-  assert.equal(
-    packageJson.scripts.test,
-    "node --test tests/title-links.test.mjs tests/quality-config.test.mjs tests/m0-data-boundary.test.mjs tests/product-truth-seo.test.mjs tests/monetization-foundation.test.mjs tests/m0-closure.test.mjs tests/m1-activation.test.mjs tests/m1-user-list-writer.test.mjs tests/m1-bulk-add.test.mjs tests/m1-bulk-writer.test.mjs tests/m1-search-contract.test.mjs tests/growth-2026-foundation.test.mjs tests/production-seo-verification.test.mjs tests/seo-phase-b-entity-surfaces.test.mjs tests/seo-phase-c-discoverability.test.mjs tests/final-production-polish.test.mjs tests/m2-rating-diary-foundation.test.mjs tests/m2-rating-diary-runtime.test.mjs",
-  );
+
+  const requiredTests = [
+    "tests/title-links.test.mjs",
+    "tests/quality-config.test.mjs",
+    "tests/m0-data-boundary.test.mjs",
+    "tests/product-truth-seo.test.mjs",
+    "tests/monetization-foundation.test.mjs",
+    "tests/m0-closure.test.mjs",
+    "tests/m1-activation.test.mjs",
+    "tests/m1-user-list-writer.test.mjs",
+    "tests/m1-bulk-add.test.mjs",
+    "tests/m1-bulk-writer.test.mjs",
+    "tests/m1-search-contract.test.mjs",
+    "tests/growth-2026-foundation.test.mjs",
+    "tests/production-seo-verification.test.mjs",
+    "tests/seo-phase-b-entity-surfaces.test.mjs",
+    "tests/seo-phase-c-discoverability.test.mjs",
+    "tests/final-production-polish.test.mjs",
+    "tests/m2-rating-diary-foundation.test.mjs",
+    "tests/m2-rating-diary-runtime.test.mjs",
+    "tests/title-uiux-2026.test.mjs",
+  ];
+
+  assert.match(packageJson.scripts.test, /^node --test /);
+  for (const testPath of requiredTests) {
+    assert.match(packageJson.scripts.test, new RegExp(testPath.replaceAll(".", "\\.")));
+  }
+
   assert.equal(
     packageJson.scripts.quality,
     "npm run lint && npm run typecheck && npm test && npm run build",
