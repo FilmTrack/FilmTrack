@@ -5,6 +5,9 @@ import test from "node:test";
 const homePage = await readFile(new URL("../src/app/page.tsx", import.meta.url), "utf8");
 const titlePage = await readFile(new URL("../src/app/title/[id]/page.tsx", import.meta.url), "utf8");
 const ratingDiary = await readFile(new URL("../src/components/RatingDiaryPanel.tsx", import.meta.url), "utf8");
+const navbar = await readFile(new URL("../src/components/Navbar.tsx", import.meta.url), "utf8");
+const footer = await readFile(new URL("../src/components/Footer.tsx", import.meta.url), "utf8");
+const layout = await readFile(new URL("../src/app/layout.tsx", import.meta.url), "utf8");
 
 test("approved FilmTrack homepage exposes cinematic live-content discovery", () => {
   assert.match(homePage, /bg-\[#050914\]/);
@@ -49,6 +52,24 @@ test("rating and diary controls remain accessible and mobile friendly", () => {
   assert.match(ratingDiary, /min-h-12/);
   assert.match(ratingDiary, /role="status"/);
   assert.match(ratingDiary, /Rewatch/);
+});
+
+test("responsive shell keeps search and complete mobile navigation available", () => {
+  assert.match(navbar, /aria-label="ناوبری اصلی"/);
+  assert.match(navbar, /md:hidden/);
+  assert.match(navbar, /FilmTrack Plus/);
+  assert.match(navbar, /<LiveSearch \/>/);
+  assert.match(navbar, /min-h-12/);
+  assert.match(navbar, /bg-\[#050914\]\/90/);
+});
+
+test("footer and root shell share the approved cinematic design language", () => {
+  assert.match(footer, /bg-\[#050914\]/);
+  assert.match(footer, /FilmTrack Plus/);
+  assert.match(footer, /امیر متفکر/);
+  assert.match(layout, /themeColor: "#050914"/);
+  assert.match(layout, /viewportFit: "cover"/);
+  assert.doesNotMatch(layout, /<main className="flex-1">/);
 });
 
 test("runtime readiness gate is still explicit", () => {
