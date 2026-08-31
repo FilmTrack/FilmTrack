@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { CalendarDays, Check, RotateCcw, Sparkles, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,23 +26,9 @@ export default function RatingDiaryPanel({
   const [busy, setBusy] = useState<"rating" | "diary" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  if (!enabled) {
-    return (
-      <section
-        aria-label="امتیاز و دفترچه FilmTrack"
-        className="mt-4 rounded-xl border border-gray-800 bg-[#151515] p-4"
-      >
-        <p className="font-semibold text-white">امتیاز و دفترچه FilmTrack</p>
-        <p className="mt-1 text-sm leading-6 text-gray-400">
-          زیرساخت این قابلیت آماده است و پس از تأیید نهایی پایگاه‌داده فعال می‌شود.
-        </p>
-      </section>
-    );
-  }
-
   const handleResult = (result: Awaited<ReturnType<typeof saveRating>>) => {
     if (result.ok) {
-      setMessage("ذخیره شد.");
+      setMessage("با موفقیت در FilmTrack ذخیره شد.");
       router.refresh();
       return;
     }
@@ -52,7 +39,7 @@ export default function RatingDiaryPanel({
     }
 
     if (result.reason === "runtime_unavailable") {
-      setMessage("این قابلیت هنوز فعال نشده است.");
+      setMessage("این قابلیت هنوز برای حساب شما فعال نشده است.");
       return;
     }
 
@@ -86,63 +73,123 @@ export default function RatingDiaryPanel({
   return (
     <section
       aria-label="امتیاز و دفترچه FilmTrack"
-      className="mt-4 space-y-4 rounded-xl border border-gray-800 bg-[#151515] p-4"
+      className="overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220]/90 shadow-2xl shadow-black/20 backdrop-blur"
     >
-      <div>
-        <p className="font-semibold text-white">امتیاز من</p>
-        <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-10">
-          {Array.from({ length: 10 }, (_, index) => index + 1).map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={rating === value}
-              onClick={() => setRating(value)}
-              className={
-                rating === value
-                  ? "min-h-11 rounded-lg bg-blue-600 font-bold text-white"
-                  : "min-h-11 rounded-lg border border-gray-700 bg-[#101010] text-gray-300 hover:border-gray-500"
-              }
-            >
-              {value}
-            </button>
-          ))}
+      <div className="border-b border-white/10 bg-gradient-to-l from-violet-500/10 via-blue-500/10 to-transparent px-4 py-4 sm:px-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-medium text-blue-300">تجربه شخصی شما</p>
+            <h2 className="mt-1 text-lg font-black text-white">امتیاز و دفترچه تماشا</h2>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-violet-300">
+            <Sparkles className="h-5 w-5" />
+          </div>
         </div>
-        <Button
-          type="button"
-          onClick={submitRating}
-          disabled={rating === null || busy !== null}
-          className="mt-3 min-h-11 w-full"
-        >
-          {busy === "rating" ? "در حال ذخیره..." : "ثبت امتیاز"}
-        </Button>
       </div>
 
-      <div className="border-t border-gray-800 pt-4">
-        <label htmlFor="filmtrack-watched-on" className="font-semibold text-white">
-          ثبت در دفترچه تماشا
-        </label>
-        <input
-          id="filmtrack-watched-on"
-          type="date"
-          value={watchedOn}
-          onChange={(event) => setWatchedOn(event.target.value)}
-          className="mt-3 min-h-11 w-full rounded-lg border border-gray-700 bg-[#101010] px-3 text-white"
-        />
-        <Button
-          type="button"
-          variant="outline"
-          onClick={submitDiary}
-          disabled={!watchedOn || busy !== null}
-          className="mt-3 min-h-11 w-full border-gray-700"
-        >
-          {busy === "diary" ? "در حال ثبت..." : "ثبت تماشا"}
-        </Button>
-        <p className="mt-2 text-xs leading-5 text-gray-500">
-          ثبت دوباره همین عنوان، تماشای مجدد را بدون حذف تاریخچه حفظ می‌کند.
-        </p>
-      </div>
+      {!enabled ? (
+        <div className="p-5">
+          <div className="rounded-xl border border-blue-400/15 bg-blue-500/5 p-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-lg bg-blue-500/10 p-2 text-blue-300">
+                <Check className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="font-bold text-white">زیرساخت آماده است</p>
+                <p className="mt-1 text-sm leading-6 text-slate-400">
+                  امتیازدهی، ثبت تاریخ تماشا و Rewatch آماده‌اند و بعد از فعال‌سازی نهایی سرویس در دسترس قرار می‌گیرند.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-0 lg:grid-cols-2">
+          <div className="p-4 sm:p-5 lg:border-l lg:border-white/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-white">امتیاز من</p>
+                <p className="mt-1 text-xs text-slate-500">از ۱ تا ۱۰، دقیق و شخصی</p>
+              </div>
+              <div className="flex items-center gap-1 text-amber-300">
+                <Star className="h-4 w-4 fill-current" />
+                <span className="text-sm font-black">{rating ?? "—"}/10</span>
+              </div>
+            </div>
 
-      {message && <p className="text-sm text-gray-300">{message}</p>}
+            <div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-10 lg:grid-cols-5 xl:grid-cols-10">
+              {Array.from({ length: 10 }, (_, index) => index + 1).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={rating === value}
+                  aria-label={`امتیاز ${value} از 10`}
+                  onClick={() => setRating(value)}
+                  className={
+                    rating === value
+                      ? "min-h-11 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 font-black text-white shadow-lg shadow-blue-950/30 outline-none ring-1 ring-white/20"
+                      : "min-h-11 rounded-xl border border-white/10 bg-white/[0.03] font-bold text-slate-300 transition hover:-translate-y-0.5 hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  }
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              type="button"
+              onClick={submitRating}
+              disabled={rating === null || busy !== null}
+              className="mt-4 min-h-12 w-full rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 font-black text-white shadow-lg shadow-blue-950/30 hover:opacity-95"
+            >
+              {busy === "rating" ? "در حال ذخیره امتیاز..." : "ثبت امتیاز من"}
+            </Button>
+          </div>
+
+          <div className="border-t border-white/10 p-4 sm:p-5 lg:border-t-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-white">دفترچه تماشا</p>
+                <p className="mt-1 text-xs text-slate-500">هر بار تماشا را جدا ثبت کنید</p>
+              </div>
+              <div className="flex items-center gap-2 text-slate-400">
+                <CalendarDays className="h-4 w-4" />
+                <RotateCcw className="h-4 w-4" />
+              </div>
+            </div>
+
+            <label htmlFor="filmtrack-watched-on" className="sr-only">
+              تاریخ تماشا
+            </label>
+            <input
+              id="filmtrack-watched-on"
+              type="date"
+              value={watchedOn}
+              onChange={(event) => setWatchedOn(event.target.value)}
+              className="mt-4 min-h-12 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-white outline-none transition [color-scheme:dark] focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+            />
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={submitDiary}
+              disabled={!watchedOn || busy !== null}
+              className="mt-3 min-h-12 w-full rounded-xl border-white/10 bg-white/[0.03] font-bold text-white hover:bg-white/[0.07]"
+            >
+              {busy === "diary" ? "در حال ثبت تماشا..." : "ثبت در دفترچه"}
+            </Button>
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              ثبت دوباره همین عنوان، Rewatch محسوب می‌شود و تاریخچه شما حفظ خواهد شد.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {message && (
+        <div className="border-t border-white/10 px-5 py-3 text-sm text-slate-300" role="status">
+          {message}
+        </div>
+      )}
     </section>
   );
 }
