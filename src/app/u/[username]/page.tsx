@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, LockKeyhole, UserRound } from "lucide-react";
+import { ArrowRight, Clock3, LockKeyhole, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import CommunityFollowButton from "@/components/CommunityFollowButton";
+import TmdbImage from "@/components/TmdbImage";
 import { isCommunityRuntimeEnabled } from "@/lib/m3/readiness";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,6 +13,48 @@ type CommunityProfileRow = {
   display_name: string | null;
   bio: string | null;
 };
+
+type PublicListRow = {
+  id: number;
+  title_id: number;
+  title_type: "movie" | "tv";
+  status: "plan_to_watch" | "watching" | "completed" | "on_hold" | "dropped";
+  created_at: string;
+};
+
+type TmdbTitle = {
+  title?: string;
+  name?: string;
+  poster_path?: string | null;
+};
+
+const STATUS_LABELS: Record<PublicListRow["status"], string> = {
+  plan_to_watch: "برای بعد",
+  watching: "در حال تماشا",
+  completed: "تماشا شده",
+  on_hold: "متوقف موقت",
+  dropped: "رها شده",
+};
+
+async function fetchTmdbTitle(
+  apiKey: string | undefined,
+  titleId: number,
+  titleType: PublicListRow["title_type"],
+): Promise<TmdbTitle | null> {
+  if (!apiKey) return null;
+
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/${titleType}/${titleId}?api_key=${apiKey}&language=fa-IR`,
+      { next: { revalidate: 3600 } },
+    );
+
+    if (!response.ok) return null;
+    return (await response.json()) as TmdbTitle;
+  } catch {
+    return null;
+  }
+}
 
 export default async function CommunityPublicProfile({
   params,
@@ -91,6 +134,27 @@ export default async function CommunityPublicProfile({
     following = Boolean(followEdge);
   }
 
+  // user_lists has an explicit public-read RLS policy keyed by is_public=true.
+  // Ratings and diary entries remain owner-only and are intentionally excluded.
+  const { data: publicListData } = await supabase
+    .from("user_lists")
+    .select("id,title_id,title_type,status,created_at")
+    .eq("user_id", profile.user_id)
+    .eq("is_public", true)
+    .order("created_at", { ascending: false })
+    .limit(12);
+
+  const publicList = (publicListData ?? []) as unknown as PublicListRow[];
+  const tmdbTitles = await Promise.all(
+    publicList.map((item) =>
+      fetchTmdbTitle(process.env.TMDB_API_KEY, item.title_id, item.title_type),
+    ),
+  );
+  const publicActivity = publicList.map((item, index) => ({
+    item,
+    title: tmdbTitles[index],
+  }));
+
   return (
     <main className="min-h-screen bg-[#050914] text-white" dir="rtl">
       <section className="border-b border-white/5 bg-[radial-gradient(circle_at_80%_0%,rgba(37,99,235,.16),transparent_34%),radial-gradient(circle_at_20%_0%,rgba(124,58,237,.14),transparent_30%)]">
@@ -131,11 +195,63 @@ export default async function CommunityPublicProfile({
       </section>
 
       <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 sm:p-8">
-          <h2 className="text-lg font-black">فعالیت اجتماعی</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-            هویت عمومی و رابطه دنبال‌کردن اکنون فعال است. نمایش فعالیت، نقدها و دفترچه تماشا در مرحله بعد با کنترل حریم خصوصی به این صفحه اضافه می‌شود.
-          </p>
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-blue-200">
+              <Clock3 className="h-4 w-4" />
+              <span className="text-xs font-black">فعالیت عمومی</span>
+            </div>
+            <h2 className="mt-2 text-xl font-black">فهرست‌های عمومی</h2>
+            <p className="mt-1 text-sm leading-7 text-slate-500">
+              فقط عنوان‌هایی نمایش داده می‌شوند که صاحب پروفایل صریحاً عمومی کرده است.
+            </p>
+          </div>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-slate-300">
+            {publicActivity.length} عنوان
+          </span>
+        </div>
+
+        {publicActivity.length === 0 ? (
+          <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 sm:p-8">
+            <p className="text-sm leading-7 text-slate-400">
+              این عضو هنوز فعالیت عمومی قابل نمایش ندارد.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {publicActivity.map(({ item, title }) => {
+              const label = title?.title || title?.name || `عنوان ${item.title_id}`;
+
+              return (
+                <Link
+                  key={item.id}
+                  href={`/title/${item.title_id}?type=${item.title_type}`}
+                  className="group rounded-2xl border border-white/10 bg-white/[0.025] p-3 transition hover:border-blue-400/30 hover:bg-white/[0.05]"
+                >
+                  <div className="aspect-[2/3] overflow-hidden rounded-xl bg-slate-900">
+                    {title?.poster_path ? (
+                      <TmdbImage
+                        src={`https://image.tmdb.org/t/p/w500${title.poster_path}`}
+                        alt={label}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center px-4 text-center text-xs text-slate-600">
+                        تصویر در دسترس نیست
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-3 truncate text-sm font-black text-slate-100">{label}</p>
+                  <p className="mt-1 text-xs font-bold text-blue-300">{STATUS_LABELS[item.status]}</p>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mt-6 rounded-2xl border border-amber-400/10 bg-amber-500/[0.04] px-4 py-3 text-xs leading-6 text-amber-100/70">
+          امتیازها و دفترچه تماشا در این مرحله خصوصی می‌مانند و روی پروفایل دیگران نمایش داده نمی‌شوند.
         </div>
       </section>
     </main>
