@@ -11,11 +11,13 @@ import {
 type CommunityFollowButtonProps = {
   username: string;
   initialFollowing: boolean;
+  compact?: boolean;
 };
 
 export default function CommunityFollowButton({
   username,
   initialFollowing,
+  compact = false,
 }: CommunityFollowButtonProps) {
   const [following, setFollowing] = useState(initialFollowing);
   const [followsYou, setFollowsYou] = useState(false);
@@ -26,7 +28,10 @@ export default function CommunityFollowButton({
     let cancelled = false;
 
     void getCommunityRelationship(username).then((result) => {
-      if (!cancelled && result.ok) setFollowsYou(result.followsYou);
+      if (!cancelled && result.ok) {
+        setFollowing(result.following);
+        setFollowsYou(result.followsYou);
+      }
     });
 
     return () => {
@@ -56,7 +61,7 @@ export default function CommunityFollowButton({
   };
 
   return (
-    <div className="flex flex-col items-stretch gap-2 sm:items-end">
+    <div className={`flex flex-col items-stretch gap-2 ${compact ? "" : "sm:items-end"}`}>
       <button
         type="button"
         onClick={handleToggle}
@@ -64,8 +69,8 @@ export default function CommunityFollowButton({
         aria-pressed={following}
         className={
           following
-            ? "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 text-sm font-black text-white transition hover:bg-white/10 disabled:cursor-wait disabled:opacity-60"
-            : "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-black text-white transition hover:bg-blue-500 disabled:cursor-wait disabled:opacity-60"
+            ? `inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 text-sm font-black text-white transition hover:bg-white/10 disabled:cursor-wait disabled:opacity-60 ${compact ? "min-h-10 px-3" : "min-h-11 px-5"}`
+            : `inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-black text-white transition hover:bg-blue-500 disabled:cursor-wait disabled:opacity-60 ${compact ? "min-h-10 px-3" : "min-h-11 px-5"}`
         }
       >
         {isPending ? (
