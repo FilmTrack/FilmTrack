@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/server";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  Clapperboard,
+  Flame,
+  PlayCircle,
+  Sparkles,
+  Star,
+  Tv,
+} from "lucide-react";
 
 import TmdbImage from "@/components/TmdbImage";
+import { createClient } from "@/lib/supabase/server";
 
 type TMDBResult = {
   id: number;
@@ -11,18 +20,20 @@ type TMDBResult = {
   backdrop_path?: string | null;
   name?: string;
   title?: string;
+  overview?: string;
+  vote_average?: number;
+  release_date?: string;
+  first_air_date?: string;
 };
 
-const homeTitle = "FilmTrack | ردیاب فارسی فیلم و سریال";
+const homeTitle = "FilmTrack | خانه فارسی طرفداران فیلم و سریال";
 const homeDescription =
-  "فیلم‌ها و سریال‌هایت را در FilmTrack کشف و ردیابی کن، وضعیت تماشا را ثبت کن و فهرست و تاریخچه شخصی خودت را بساز.";
+  "فیلم‌ها و سریال‌های تازه را کشف کن، امتیاز بده، تاریخ تماشا و Rewatch را ثبت کن و مسیر سینمایی خودت را در FilmTrack بساز.";
 
 export const metadata: Metadata = {
   title: homeTitle,
   description: homeDescription,
-  alternates: {
-    canonical: "/",
-  },
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: "/",
@@ -36,9 +47,10 @@ export const metadata: Metadata = {
   },
 };
 
-async function fetchTMDB(endpoint: string) {
+async function fetchTMDB(endpoint: string): Promise<TMDBResult[]> {
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) return [];
+
   try {
     const res = await fetch(
       `https://api.themoviedb.org/3${endpoint}?api_key=${apiKey}&language=fa-IR`,
@@ -52,40 +64,92 @@ async function fetchTMDB(endpoint: string) {
   }
 }
 
-const Carousel = ({ title, items, type }: { title: string; items: TMDBResult[]; type: "tv" | "movie" }) => {
-  if (!items || items.length === 0) return null;
+function titleOf(item: TMDBResult) {
+  return item.title || item.name || "بدون عنوان";
+}
+
+function yearOf(item: TMDBResult) {
+  const raw = item.release_date || item.first_air_date;
+  return raw ? new Date(raw).getFullYear() : null;
+}
+
+function MediaRail({
+  title,
+  eyebrow,
+  items,
+  type,
+}: {
+  title: string;
+  eyebrow: string;
+  items: TMDBResult[];
+  type: "tv" | "movie";
+}) {
+  if (!items.length) return null;
+
   return (
-    <div className="mb-12">
-      <h2 className="text-xl font-bold text-white mb-4 pr-1">{title}</h2>
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        {items.slice(0, 20).map((item) => (
-          <Link href={`/title/${item.id}?type=${type}`} key={item.id} className="flex-shrink-0 w-32 md:w-40 group">
-            <div className="w-full h-48 md:h-60 bg-gray-800 rounded-lg overflow-hidden transition-transform group-hover:scale-105 shadow-lg">
-              {item.poster_path && (
+    <section className="mt-10 sm:mt-12">
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold text-blue-300">{eyebrow}</p>
+          <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">{title}</h2>
+        </div>
+        <Link
+          href={type === "movie" ? "/movies" : "/shows"}
+          className="hidden min-h-10 items-center gap-1 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-xs font-bold text-slate-400 transition hover:bg-white/[0.07] hover:text-white sm:inline-flex"
+        >
+          مشاهده بیشتر <ChevronLeft className="h-4 w-4" />
+        </Link>
+      </div>
+
+      <div className="flex snap-x gap-3 overflow-x-auto pb-3 sm:gap-4" style={{ scrollbarWidth: "none" }}>
+        {items.slice(0, 16).map((item, index) => (
+          <Link
+            href={`/title/${item.id}?type=${type}`}
+            key={item.id}
+            className="group w-[138px] flex-none snap-start sm:w-[168px]"
+          >
+            <article className="relative aspect-[2/3] overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220] shadow-lg shadow-black/20 transition duration-300 group-hover:-translate-y-1 group-hover:border-blue-400/30">
+              {item.poster_path ? (
                 <TmdbImage
                   src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                  alt={item.title || item.name || "Poster"}
-                  className="w-full h-full object-cover"
+                  alt={`پوستر ${titleOf(item)}`}
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                 />
+              ) : (
+                <div className="flex h-full items-center justify-center px-4 text-center text-xs text-slate-500">بدون پوستر</div>
               )}
-            </div>
-            <p className="mt-2 text-sm text-gray-400 truncate group-hover:text-white transition-colors">
-              {item.title || item.name}
-            </p>
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/60 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-3">
+                <div className="flex items-center justify-between gap-2 text-[10px] font-bold text-slate-300">
+                  <span>{yearOf(item) || "—"}</span>
+                  {typeof item.vote_average === "number" && item.vote_average > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-amber-300 backdrop-blur">
+                      <Star className="h-3 w-3 fill-current" /> {item.vote_average.toFixed(1)}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <span className="absolute right-2 top-2 flex h-8 min-w-8 items-center justify-center rounded-xl border border-white/10 bg-black/55 px-2 text-xs font-black text-white backdrop-blur">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+            </article>
+            <p className="mt-2 truncate text-sm font-bold text-slate-200 transition group-hover:text-white">{titleOf(item)}</p>
           </Link>
         ))}
       </div>
-    </div>
+    </section>
   );
-};
+}
 
 export default async function Home() {
-  const [trendingShows, trendingMovies, popularShows, topRatedShows] = await Promise.all([
-    fetchTMDB("/trending/tv/week"),
+  const [trendingMovies, trendingShows, popularShows, topRatedShows] = await Promise.all([
     fetchTMDB("/trending/movie/week"),
+    fetchTMDB("/trending/tv/week"),
     fetchTMDB("/tv/popular"),
     fetchTMDB("/tv/top_rated"),
   ]);
+
+  const hero = trendingMovies.find((item) => item.backdrop_path) || trendingMovies[0] || trendingShows[0];
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -96,68 +160,135 @@ export default async function Home() {
     { id: 35, name: "کمدی" },
     { id: 18, name: "درام" },
     { id: 27, name: "ترسناک" },
-    { id: 10765, name: "علمی-تخیلی" },
-    { id: 10759, name: "اکشن و ماجراجویی" },
+    { id: 878, name: "علمی‌تخیلی" },
+    { id: 53, name: "هیجان‌انگیز" },
   ];
 
   return (
-    <div className="min-h-screen text-white">
-      <div className="relative h-[50vh] min-h-[400px] w-full overflow-hidden mb-12">
-        {trendingMovies[0] && (
-          <div className="absolute inset-0">
+    <main className="min-h-screen overflow-hidden bg-[#050914] text-white" dir="rtl">
+      <section className="relative isolate min-h-[620px] overflow-hidden border-b border-white/5 sm:min-h-[680px]">
+        {hero?.backdrop_path && (
+          <div className="absolute inset-0 -z-20">
             <TmdbImage
-              src={`https://image.tmdb.org/t/p/original${trendingMovies[0].backdrop_path || trendingMovies[0].poster_path}`}
-              alt="Hero"
-              className="w-full h-full object-cover opacity-30"
+              src={`https://image.tmdb.org/t/p/original${hero.backdrop_path}`}
+              alt=""
+              className="h-full w-full object-cover object-center opacity-45"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e0e] to-transparent"></div>
           </div>
         )}
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
-            فیلم‌ها و سریال‌هایت را ردیابی کن
-          </h1>
-          <p className="text-gray-400 text-lg mb-8 max-w-2xl">
-            خانه فارسی‌زبان علاقه‌مندان فیلم و سریال؛ فهرست تماشایت را
-            بساز، عنوان‌های تازه را کشف کن و مسیر تماشایت را به خاطر بسپار.
-          </p>
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,#050914_5%,rgba(5,9,20,.93)_34%,rgba(5,9,20,.58)_64%,rgba(5,9,20,.45)_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,#050914_0%,rgba(5,9,20,.82)_12%,transparent_52%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_70%_26%,rgba(37,99,235,.19),transparent_30%),radial-gradient(circle_at_28%_12%,rgba(124,58,237,.14),transparent_28%)]" />
 
-          {isLoggedIn ? (
-            <Link href="/dashboard">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 px-10 py-6 text-lg rounded-full">
-                رفتن به داشبورد
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/auth">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 px-10 py-6 text-lg rounded-full">
-                شروع رایگان
-              </Button>
+        <div className="mx-auto grid min-h-[620px] max-w-7xl items-center gap-10 px-4 pb-16 pt-24 sm:min-h-[680px] sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-8">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-200 backdrop-blur">
+              <Sparkles className="h-4 w-4" /> خانه فارسی طرفداران فیلم و سریال
+            </div>
+
+            <h1 className="mt-6 text-4xl font-black leading-[1.18] tracking-tight sm:text-5xl lg:text-7xl">
+              هر فیلم، هر سریال،
+              <span className="block bg-gradient-to-l from-violet-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent">یک مسیر شخصی برای تو</span>
+            </h1>
+
+            <p className="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+              کشف کن، امتیاز بده، در دفترچه تماشا ثبت کن و Rewatchهایت را نگه دار. FilmTrack قرار است خانه اصلی تجربه سینمایی فارسی‌زبان‌ها باشد.
+            </p>
+
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href={isLoggedIn ? "/dashboard" : "/auth"}
+                className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 px-6 text-sm font-black text-white shadow-xl shadow-blue-950/30 transition hover:-translate-y-0.5"
+              >
+                {isLoggedIn ? "رفتن به داشبورد" : "ساخت حساب FilmTrack"}
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+              {hero && (
+                <Link
+                  href={`/title/${hero.id}?type=movie`}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-white/15 bg-black/25 px-5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/10"
+                >
+                  <PlayCircle className="h-5 w-5" /> مشاهده عنوان منتخب
+                </Link>
+              )}
+            </div>
+
+            <div className="mt-8 grid max-w-xl grid-cols-3 gap-2 sm:gap-3">
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-3 backdrop-blur sm:p-4">
+                <Flame className="h-4 w-4 text-orange-300" />
+                <p className="mt-2 text-xs font-bold text-slate-300">ترندهای زنده</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-3 backdrop-blur sm:p-4">
+                <Star className="h-4 w-4 text-amber-300" />
+                <p className="mt-2 text-xs font-bold text-slate-300">امتیاز شخصی</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-3 backdrop-blur sm:p-4">
+                <Clapperboard className="h-4 w-4 text-violet-300" />
+                <p className="mt-2 text-xs font-bold text-slate-300">دفترچه تماشا</p>
+              </div>
+            </div>
+          </div>
+
+          {hero && (
+            <Link
+              href={`/title/${hero.id}?type=movie`}
+              className="group hidden overflow-hidden rounded-3xl border border-white/10 bg-[#0b1220]/80 p-3 shadow-2xl shadow-black/40 backdrop-blur lg:block"
+            >
+              <div className="relative aspect-[2/3] overflow-hidden rounded-2xl">
+                {hero.poster_path && (
+                  <TmdbImage
+                    src={`https://image.tmdb.org/t/p/w780${hero.poster_path}`}
+                    alt={`پوستر ${titleOf(hero)}`}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+                  />
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-5 pt-20">
+                  <p className="text-xs font-bold text-blue-300">منتخب این هفته</p>
+                  <p className="mt-1 text-xl font-black text-white">{titleOf(hero)}</p>
+                  <div className="mt-3 flex items-center gap-3 text-xs text-slate-300">
+                    {yearOf(hero) && <span>{yearOf(hero)}</span>}
+                    {typeof hero.vote_average === "number" && (
+                      <span className="inline-flex items-center gap-1 text-amber-300">
+                        <Star className="h-3.5 w-3.5 fill-current" /> {hero.vote_average.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </Link>
           )}
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8">
-        <Carousel title="🔥 سریال‌های ترند هفته" items={trendingShows} type="tv" />
-        <Carousel title="🎬 فیلم‌های ترند هفته" items={trendingMovies} type="movie" />
+      <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+        <MediaRail title="فیلم‌هایی که این هفته همه درباره‌شان حرف می‌زنند" eyebrow="ترند فیلم" items={trendingMovies} type="movie" />
+        <MediaRail title="سریال‌های داغ این هفته" eyebrow="ترند سریال" items={trendingShows} type="tv" />
 
-        <div className="mb-12">
-          <h2 className="text-xl font-bold text-white mb-4 pr-1">کاوش بر اساس ژانر</h2>
-          <div className="flex gap-3 flex-wrap">
-            {genres.map((genre) => (
-              <Link href={`/genre/${genre.id}`} key={genre.id}>
-                <Button variant="outline" className="bg-[#1a1a1a] border-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 rounded-full">
+        <section className="mt-12 overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(135deg,rgba(37,99,235,.12),rgba(124,58,237,.08),rgba(255,255,255,.02))] p-5 sm:p-7">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-xl">
+              <div className="flex items-center gap-2 text-sm font-black text-white">
+                <Tv className="h-5 w-5 text-blue-300" /> کاوش بر اساس حال‌وهوای تماشا
+              </div>
+              <p className="mt-2 text-sm leading-7 text-slate-400">به‌جای جست‌وجوی بی‌پایان، از ژانری شروع کن که همین حالا می‌خواهی ببینی.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {genres.map((genre) => (
+                <Link
+                  href={`/genre/${genre.id}`}
+                  key={genre.id}
+                  className="inline-flex min-h-11 items-center rounded-xl border border-white/10 bg-black/20 px-4 text-sm font-bold text-slate-300 transition hover:border-blue-400/30 hover:bg-blue-500/10 hover:text-white"
+                >
                   {genre.name}
-                </Button>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
 
-        <Carousel title="📺 سریال‌های محبوب TMDB" items={popularShows} type="tv" />
-        <Carousel title="⭐ سریال‌های برتر TMDB" items={topRatedShows} type="tv" />
+        <MediaRail title="محبوب‌ترین سریال‌ها برای شروع" eyebrow="محبوب" items={popularShows} type="tv" />
+        <MediaRail title="سریال‌های تحسین‌شده" eyebrow="بالاترین امتیاز" items={topRatedShows} type="tv" />
       </div>
-    </div>
+    </main>
   );
 }

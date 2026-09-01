@@ -1,25 +1,21 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { CalendarDays, CheckCircle2, Eye, Film, Globe2, PlayCircle, Sparkles } from "lucide-react";
 
 import ListVisibilityToggle from "@/components/ListVisibilityToggle";
 import TmdbImage from "@/components/TmdbImage";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub;
 
-  if (!userId) {
-    redirect("/auth");
-  }
+  if (!userId) redirect("/auth");
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   const { data: userLists } = await supabase
     .from("user_lists")
     .select("*")
@@ -27,12 +23,11 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
 
   const apiKey = process.env.TMDB_API_KEY;
-
   const fetchTMDBDetails = async (id: number, type: string) => {
     if (!apiKey) return null;
     try {
       const res = await fetch(
-        `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=en-US`,
+        `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=fa-IR`,
         { next: { revalidate: 3600 } },
       );
       if (!res.ok) return null;
@@ -52,146 +47,116 @@ export default async function DashboardPage() {
     .filter((item) => item.tmdb !== null);
 
   const stats = [
-    { label: "مجموع آیتم‌ها", value: watchList.length.toString(), icon: "🎬" },
-    {
-      label: "در حال تماشا",
-      value: watchList.filter((i) => i.status === "watching").length.toString(),
-      icon: "📺",
-    },
-    {
-      label: "تماشا شده",
-      value: watchList.filter((i) => i.status === "completed").length.toString(),
-      icon: "✅",
-    },
-    {
-      label: "عمومی",
-      value: watchList.filter((i) => i.is_public === true).length.toString(),
-      icon: "🌐",
-    },
+    { label: "همه عنوان‌ها", value: watchList.length.toString(), icon: Film },
+    { label: "در حال تماشا", value: watchList.filter((i) => i.status === "watching").length.toString(), icon: PlayCircle },
+    { label: "تماشا شده", value: watchList.filter((i) => i.status === "completed").length.toString(), icon: CheckCircle2 },
+    { label: "عمومی", value: watchList.filter((i) => i.is_public === true).length.toString(), icon: Globe2 },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] text-white p-4 md:p-8">
-      <div className="max-w-6xl mx-auto flex flex-col-reverse md:flex-row gap-8">
-        <main className="flex-1 space-y-12">
-          <div>
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold border-r-4 border-blue-600 pr-3">
-                لیست تماشای شما
-              </h2>
-              <p className="text-sm text-gray-500 mt-3">
-                همه آیتم‌ها به‌صورت پیش‌فرض خصوصی هستند. فقط مواردی که خودتان روی «عمومی» قرار دهید در پروفایل عمومی دیده می‌شوند.
-              </p>
+    <main className="min-h-screen bg-[#050914] text-white" dir="rtl">
+      <section className="border-b border-white/5 bg-[radial-gradient(circle_at_78%_5%,rgba(37,99,235,.14),transparent_30%),radial-gradient(circle_at_22%_0%,rgba(124,58,237,.12),transparent_26%)]">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-200">
+                <Sparkles className="h-4 w-4" /> فضای شخصی تو
+              </div>
+              <h1 className="mt-4 text-3xl font-black sm:text-4xl">داشبورد تماشای من</h1>
+              <p className="mt-2 text-sm leading-7 text-slate-400">فهرست‌ها، وضعیت تماشا و مسیر شخصی خودت را از همین‌جا مدیریت کن.</p>
             </div>
-
-            {combinedList.length === 0 ? (
-              <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-8 text-center">
-                <p className="text-gray-400 mb-4">هنوز هیچ چیزی به لیست خود اضافه نکرده‌اید!</p>
-                <Link href="/">
-                  <Button className="bg-blue-600 hover:bg-blue-700">کاوش و افزودن فیلم</Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {combinedList.map(({ db, tmdb }) => (
-                  <div
-                    key={db.id}
-                    className="flex flex-col sm:flex-row gap-4 bg-[#1a1a1a] border border-gray-800 p-4 rounded-xl hover:border-gray-600 transition-colors"
-                  >
-                    <Link
-                      href={`/title/${db.title_id}?type=${db.title_type}`}
-                      className="flex flex-1 flex-col sm:flex-row gap-4 min-w-0"
-                    >
-                      <div className="w-full sm:w-24 h-36 sm:h-36 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
-                        {tmdb.poster_path && (
-                          <TmdbImage
-                            src={`https://image.tmdb.org/t/p/w500${tmdb.poster_path}`}
-                            alt={tmdb.title || tmdb.name}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold truncate">{tmdb.title || tmdb.name}</h3>
-                        <p className="text-gray-400 text-sm mt-1">
-                          {db.title_type === "tv" ? "سریال" : "فیلم"} - {tmdb.release_date
-                            ? new Date(tmdb.release_date).getFullYear()
-                            : tmdb.first_air_date
-                              ? new Date(tmdb.first_air_date).getFullYear()
-                              : ""}
-                        </p>
-                        <span className="inline-block mt-2 px-2 py-1 bg-blue-600/20 text-blue-500 text-xs rounded-md">
-                          {db.status === "watching"
-                            ? "📺 در حال تماشا"
-                            : db.status === "completed"
-                              ? "✅ تماشا شده"
-                              : "⏳ در صف انتظار"}
-                        </span>
-                      </div>
-                    </Link>
-
-                    <div className="flex sm:flex-col gap-2 sm:items-end sm:justify-between">
-                      <ListVisibilityToggle id={db.id} initialPublic={db.is_public === true} />
-                      <Link href={`/title/${db.title_id}?type=${db.title_type}`}>
-                        <Button size="sm" className="bg-gray-800 hover:bg-gray-700 text-white">
-                          مشاهده و بروزرسانی
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </main>
-
-        <aside className="w-full md:w-80 flex-shrink-0">
-          <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6 sticky top-24">
-            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800">
-              <Avatar className="w-16 h-16 border-2 border-blue-600">
-                <AvatarFallback className="bg-gray-800 text-2xl text-blue-500">
-                  {user?.email?.[0]?.toUpperCase() || "F"}
-                </AvatarFallback>
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <Avatar className="h-11 w-11 border border-blue-400/30">
+                <AvatarFallback className="bg-blue-500/10 font-black text-blue-300">{user?.email?.[0]?.toUpperCase() || "F"}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="text-gray-400 text-sm">خوش آمدید،</p>
-                <h3 className="font-bold text-lg truncate">{user?.email || "FilmTrack"}</h3>
+                <p className="text-xs text-slate-500">حساب فعال</p>
+                <p dir="ltr" className="max-w-52 truncate text-sm font-bold text-white">{user?.email || "FilmTrack"}</p>
               </div>
             </div>
+          </div>
 
-            <h4 className="text-sm text-gray-500 mb-4 font-semibold">آمار شما</h4>
-            <div className="space-y-4">
-              {stats.map((stat) => (
-                <div key={stat.label} className="flex justify-between items-center bg-gray-900 p-3 rounded-lg">
-                  <span className="text-gray-300 text-sm flex items-center gap-2">
-                    <span>{stat.icon}</span> {stat.label}
-                  </span>
-                  <span className="font-bold text-blue-500">{stat.value}</span>
+          <div className="mt-7 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {stats.map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <div key={stat.label} className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur">
+                  <div className="flex items-center justify-between gap-3">
+                    <Icon className="h-4 w-4 text-blue-300" />
+                    <span className="text-2xl font-black text-white">{stat.value}</span>
+                  </div>
+                  <p className="mt-2 text-xs font-bold text-slate-400">{stat.label}</p>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-8">
+        <section className="min-w-0">
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black sm:text-2xl">فهرست تماشای تو</h2>
+              <p className="mt-2 text-xs leading-6 text-slate-500">همه موارد به‌صورت پیش‌فرض خصوصی‌اند و فقط با انتخاب خودت عمومی می‌شوند.</p>
+            </div>
+          </div>
+
+          {combinedList.length === 0 ? (
+            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center">
+              <Film className="mx-auto h-7 w-7 text-blue-300" />
+              <p className="mt-3 font-bold">فهرستت هنوز خالی است</p>
+              <p className="mt-2 text-sm text-slate-500">چند فیلم یا سریال پیدا کن و اولین مسیر تماشایت را بساز.</p>
+              <Link href="/movies" className="mt-5 inline-flex">
+                <Button className="min-h-11 rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 px-5 font-bold text-white">شروع کاوش</Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {combinedList.map(({ db, tmdb }) => (
+                <article key={db.id} className="rounded-2xl border border-white/10 bg-[#0b1220]/80 p-3 transition hover:border-blue-400/25 sm:p-4">
+                  <div className="flex gap-3 sm:gap-4">
+                    <Link href={`/title/${db.title_id}?type=${db.title_type}`} className="h-28 w-20 flex-none overflow-hidden rounded-xl bg-white/[0.04] sm:h-36 sm:w-24">
+                      {tmdb.poster_path && (
+                        <TmdbImage src={`https://image.tmdb.org/t/p/w500${tmdb.poster_path}`} alt={tmdb.title || tmdb.name} className="h-full w-full object-cover" />
+                      )}
+                    </Link>
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/title/${db.title_id}?type=${db.title_type}`}>
+                        <h3 className="truncate text-base font-black sm:text-lg">{tmdb.title || tmdb.name}</h3>
+                      </Link>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {db.title_type === "tv" ? "سریال" : "فیلم"} · {tmdb.release_date ? new Date(tmdb.release_date).getFullYear() : tmdb.first_air_date ? new Date(tmdb.first_air_date).getFullYear() : "—"}
+                      </p>
+                      <span className="mt-3 inline-flex items-center gap-1 rounded-full border border-blue-400/15 bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-300">
+                        {db.status === "watching" ? <PlayCircle className="h-3.5 w-3.5" /> : db.status === "completed" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        {db.status === "watching" ? "در حال تماشا" : db.status === "completed" ? "تماشا شده" : "در صف تماشا"}
+                      </span>
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <ListVisibilityToggle id={db.id} initialPublic={db.is_public === true} />
+                        <Link href={`/title/${db.title_id}?type=${db.title_type}`}>
+                          <Button size="sm" variant="outline" className="rounded-xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.07]">مشاهده و ویرایش</Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </article>
               ))}
             </div>
+          )}
+        </section>
 
-            <div className="flex flex-col gap-3 mt-6">
-              <Link href={`/profile/${userId}`} className="block">
-                <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-700">
-                  🌐 مشاهده پروفایل عمومی
-                </Button>
-              </Link>
-              <Link href="/calendar" className="block">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                  📅 تقویم پخش سریال‌ها
-                </Button>
-              </Link>
-              <Link href="/" className="block">
-                <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-700">
-                  کاوش در فیلم‌ها
-                </Button>
-              </Link>
+        <aside className="space-y-3 lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-2xl border border-white/10 bg-[#0b1220]/90 p-5">
+            <h2 className="text-sm font-black">میانبرهای حساب</h2>
+            <div className="mt-4 grid gap-2">
+              <Link href={`/profile/${userId}`}><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Globe2 className="ml-2 h-4 w-4" /> پروفایل عمومی</Button></Link>
+              <Link href="/calendar"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><CalendarDays className="ml-2 h-4 w-4" /> تقویم انتشار</Button></Link>
+              <Link href="/movies"><Button className="min-h-11 w-full justify-start rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 text-white"><Film className="ml-2 h-4 w-4" /> کشف فیلم‌ها</Button></Link>
             </div>
           </div>
         </aside>
       </div>
-    </div>
+    </main>
   );
 }

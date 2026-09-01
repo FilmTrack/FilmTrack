@@ -42,7 +42,7 @@ test("AI search crawler can access public pages without exposing private surface
 });
 
 test("footer attribution links Amir Motefaker to the canonical personal site", () => {
-  assert.match(footer, /درست شده با عشق ❤️ برای ایرانیان توسط/);
+  assert.match(footer, /ساخته‌شده توسط امیر متفکر/);
   assert.match(footer, /href="https:\/\/amirmotefaker\.ir"/);
   assert.doesNotMatch(
     footer,

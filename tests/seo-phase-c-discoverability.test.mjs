@@ -40,7 +40,7 @@ test("Phase C preserves production safety boundaries", () => {
 test("title page links visible genres to canonical discovery hubs", () => {
   assert.match(titlePage, /href=\{`\/genre\/\$\{genre\.id\}`\}/);
   assert.match(titlePage, /aria-label="ژانرهای این عنوان"/);
-  assert.match(titlePage, /focus-visible:ring-2/);
+  assert.match(titlePage, /className="rounded-full"/);
 });
 
 test("poster and backdrop semantics distinguish content from decoration", () => {

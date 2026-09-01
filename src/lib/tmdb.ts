@@ -11,6 +11,7 @@ export type TmdbMediaSummary = {
   vote_count?: number;
   release_date?: string;
   first_air_date?: string;
+  original_language?: string;
 };
 
 export type TmdbSearchResponse<T = TmdbMediaSummary> = {

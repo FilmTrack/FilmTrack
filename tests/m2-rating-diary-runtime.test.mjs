@@ -50,13 +50,14 @@ test("diary writer inserts repeatable watch rows and owner-scopes deletion", () 
 });
 
 test("mobile-first panel exposes a safe unavailable state", () => {
-  assert.match(panel, /if \(!enabled\)/);
-  assert.match(panel, /پس از تأیید نهایی پایگاه‌داده فعال می‌شود/);
+  assert.match(panel, /!enabled\s*\?\s*\(/);
+  assert.match(panel, /امتیازدهی، ثبت تاریخ تماشا و Rewatch آماده‌اند/);
   assert.match(panel, /grid-cols-5[\s\S]*sm:grid-cols-10/);
   assert.match(panel, /min-h-11/);
 });
 
-test("unapplied M2 tables are not wired into the production title route yet", () => {
-  assert.doesNotMatch(titlePage, /RatingDiaryPanel/);
-  assert.doesNotMatch(titlePage, /user_ratings|diary_entries/);
+test("applied M2 schema can be mounted while writes remain readiness-gated", () => {
+  assert.match(titlePage, /RatingDiaryPanel/);
+  assert.doesNotMatch(titlePage, /from\("user_ratings"\)|from\("diary_entries"\)/);
+  assert.match(panel, /isRatingDiaryRuntimeEnabled/);
 });
