@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, LockKeyhole, Search, UserRound, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 
+import CommunityFollowButton from "@/components/CommunityFollowButton";
 import { isCommunityRuntimeEnabled } from "@/lib/m3/readiness";
 import { createClient } from "@/lib/supabase/server";
 
@@ -57,8 +58,8 @@ export default async function CommunityDiscoveryPage({
   let members: PublicCommunityMember[] = [];
 
   if (query.length >= 2) {
-    // Deliberately do not select user_id, email or auth metadata. Discovery only
-    // projects fields that are explicitly part of the public Community profile.
+    // Deliberately project only the public Community identity fields. Follow
+    // state is hydrated separately through participant-scoped client reads.
     const [usernameResult, displayNameResult] = await Promise.all([
       supabase
         .from("community_profiles")
@@ -143,26 +144,35 @@ export default async function CommunityDiscoveryPage({
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {members.map((member) => (
-              <Link
+              <article
                 key={member.username}
-                href={`/u/${encodeURIComponent(member.username)}`}
-                className="group rounded-2xl border border-white/10 bg-white/[0.025] p-4 transition hover:border-blue-400/30 hover:bg-white/[0.05]"
+                className="rounded-2xl border border-white/10 bg-white/[0.025] p-4 transition hover:border-blue-400/30 hover:bg-white/[0.05]"
               >
-                <div className="flex items-start gap-3">
-                  <div className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl border border-blue-400/20 bg-blue-500/10">
-                    <UserRound className="h-5 w-5 text-blue-300" />
+                <Link href={`/u/${encodeURIComponent(member.username)}`} className="block">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl border border-blue-400/20 bg-blue-500/10">
+                      <UserRound className="h-5 w-5 text-blue-300" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-black text-white">
+                        {member.display_name || `@${member.username}`}
+                      </p>
+                      <p className="mt-1 truncate text-xs font-bold text-blue-300" dir="ltr">@{member.username}</p>
+                      {member.bio ? (
+                        <p className="mt-3 line-clamp-2 text-xs leading-6 text-slate-500">{member.bio}</p>
+                      ) : null}
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-black text-white">
-                      {member.display_name || `@${member.username}`}
-                    </p>
-                    <p className="mt-1 truncate text-xs font-bold text-blue-300" dir="ltr">@{member.username}</p>
-                    {member.bio ? (
-                      <p className="mt-3 line-clamp-2 text-xs leading-6 text-slate-500">{member.bio}</p>
-                    ) : null}
-                  </div>
+                </Link>
+
+                <div className="mt-4 border-t border-white/5 pt-3">
+                  <CommunityFollowButton
+                    username={member.username}
+                    initialFollowing={false}
+                    compact
+                  />
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         )}
