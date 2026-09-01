@@ -8,7 +8,7 @@ export type CommunityFollowResult =
   | { ok: false; code: "disabled" | "unauthenticated" | "self_follow" | "profile_not_found" | "database_error"; message: string };
 
 export type CommunityRelationshipResult =
-  | { ok: true; followsYou: boolean }
+  | { ok: true; following: boolean; followsYou: boolean }
   | { ok: false; code: "disabled" | "unauthenticated" | "profile_not_found" | "database_error" };
 
 async function resolveCommunityTarget(targetUsername: string) {
@@ -38,18 +38,34 @@ export async function getCommunityRelationship(
   const { supabase, target } = resolved;
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return { ok: false, code: "unauthenticated" };
-  if (target.user_id === user.id) return { ok: true, followsYou: false };
+  if (target.user_id === user.id) {
+    return { ok: true, following: false, followsYou: false };
+  }
 
-  // RLS permits this read because the viewer is the followed participant.
-  const { data: reverseEdge, error } = await supabase
-    .from("community_follows")
-    .select("follower_user_id")
-    .eq("follower_user_id", target.user_id)
-    .eq("followed_user_id", user.id)
-    .maybeSingle();
+  // Both reads remain participant-scoped under M3 RLS: the viewer is the
+  // follower in the forward edge and the followed participant in the reverse.
+  const [{ data: forwardEdge, error: forwardError }, { data: reverseEdge, error: reverseError }] =
+    await Promise.all([
+      supabase
+        .from("community_follows")
+        .select("followed_user_id")
+        .eq("follower_user_id", user.id)
+        .eq("followed_user_id", target.user_id)
+        .maybeSingle(),
+      supabase
+        .from("community_follows")
+        .select("follower_user_id")
+        .eq("follower_user_id", target.user_id)
+        .eq("followed_user_id", user.id)
+        .maybeSingle(),
+    ]);
 
-  if (error) return { ok: false, code: "database_error" };
-  return { ok: true, followsYou: Boolean(reverseEdge) };
+  if (forwardError || reverseError) return { ok: false, code: "database_error" };
+  return {
+    ok: true,
+    following: Boolean(forwardEdge),
+    followsYou: Boolean(reverseEdge),
+  };
 }
 
 export async function setCommunityFollow(
