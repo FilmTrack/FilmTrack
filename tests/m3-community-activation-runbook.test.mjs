@@ -45,7 +45,9 @@ test("M3 operational rollback disables runtime without destructive schema remova
 
 test("M3 activation runbook requires verification before enabling runtime", () => {
   const verifyIndex = runbook.indexOf("Run the read-only verification queries");
-  const enableIndex = runbook.indexOf("NEXT_PUBLIC_FILMTRACK_M3_COMMUNITY_ENABLED=true");
+  const enableIndex = runbook.indexOf(
+    "Only after schema and smoke checks pass, set `NEXT_PUBLIC_FILMTRACK_M3_COMMUNITY_ENABLED=true`",
+  );
   assert.ok(verifyIndex > -1);
   assert.ok(enableIndex > verifyIndex);
   assert.match(runbook, /Strict Quality Gates/);
