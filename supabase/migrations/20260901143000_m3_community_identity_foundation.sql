@@ -20,11 +20,11 @@ create table if not exists public.community_profiles (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint community_profiles_username_format_check
-    check (username = lower(username) and username ~ '^[a-z0-9_]{3,30}$'),
+    check (username = lower(username) and username ~ '^[a-z0-9_]{3,24}$'),
   constraint community_profiles_display_name_length_check
-    check (display_name is null or char_length(display_name) between 1 and 80),
+    check (display_name is null or char_length(display_name) between 1 and 48),
   constraint community_profiles_bio_length_check
-    check (bio is null or char_length(bio) <= 280),
+    check (bio is null or char_length(bio) <= 240),
   constraint community_profiles_avatar_url_length_check
     check (avatar_url is null or char_length(avatar_url) <= 1000),
   constraint community_profiles_visibility_check
