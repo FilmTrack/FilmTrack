@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Eye, ShieldCheck, UserRound, Users } from "lucide-react";
+import { ArrowRight, Eye, Search, ShieldCheck, UserRound, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import CommunityProfileEditor from "@/components/CommunityProfileEditor";
@@ -69,12 +69,20 @@ export default async function CommunityProfilePage() {
                 حریم خصوصی پیش‌فرض: خصوصی
               </div>
               {enabled ? (
-                <Link
-                  href="/dashboard/community"
-                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 text-xs font-black text-violet-100 transition hover:bg-violet-500/15"
-                >
-                  <Users className="h-4 w-4" /> شبکه من
-                </Link>
+                <>
+                  <Link
+                    href="/dashboard/community"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 text-xs font-black text-violet-100 transition hover:bg-violet-500/15"
+                  >
+                    <Users className="h-4 w-4" /> شبکه من
+                  </Link>
+                  <Link
+                    href="/community"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-xs font-black text-slate-200 transition hover:bg-white/[0.08]"
+                  >
+                    <Search className="h-4 w-4" /> کشف اعضا
+                  </Link>
+                </>
               ) : null}
               {publicProfileHref ? (
                 <Link
