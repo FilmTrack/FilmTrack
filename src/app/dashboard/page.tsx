@@ -1,12 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarDays, CheckCircle2, Eye, Film, Globe2, PlayCircle, Sparkles, UserRound } from "lucide-react";
+import { CalendarDays, CheckCircle2, Eye, Film, Globe2, PlayCircle, Sparkles, UserRound, Users } from "lucide-react";
 
 import ListVisibilityToggle from "@/components/ListVisibilityToggle";
 import TmdbImage from "@/components/TmdbImage";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { isCommunityRuntimeEnabled } from "@/lib/m3/readiness";
 import { createClient } from "@/lib/supabase/server";
+
+type CommunityDashboardProfile = {
+  username: string;
+  display_name: string | null;
+  visibility: "private" | "public";
+};
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -21,6 +28,20 @@ export default async function DashboardPage() {
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+
+  const communityEnabled = isCommunityRuntimeEnabled();
+  let communityProfile: CommunityDashboardProfile | null = null;
+
+  // Keep the dashboard production-safe before M3 is explicitly activated.
+  if (communityEnabled) {
+    const { data } = await supabase
+      .from("community_profiles")
+      .select("username,display_name,visibility")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    communityProfile = data as unknown as CommunityDashboardProfile | null;
+  }
 
   const apiKey = process.env.TMDB_API_KEY;
   const fetchTMDBDetails = async (id: number, type: string) => {
@@ -95,6 +116,47 @@ export default async function DashboardPage() {
 
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-8">
         <section className="min-w-0">
+          {communityEnabled ? (
+            communityProfile ? (
+              <div className="mb-6 rounded-3xl border border-violet-400/15 bg-[linear-gradient(135deg,rgba(124,58,237,.12),rgba(37,99,235,.08))] p-5 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-500/10">
+                      <Users className="h-5 w-5 text-violet-200" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-white">شبکه FilmTrack تو آماده است</p>
+                      <p className="mt-1 text-xs leading-6 text-slate-400">
+                        {communityProfile.display_name || `@${communityProfile.username}`} · {communityProfile.visibility === "public" ? "پروفایل عمومی" : "پروفایل خصوصی"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href="/community"><Button size="sm" className="rounded-xl bg-violet-600 text-white hover:bg-violet-500">کشف اعضا</Button></Link>
+                    <Link href="/dashboard/community"><Button size="sm" variant="outline" className="rounded-xl border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]">شبکه من</Button></Link>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-6 rounded-3xl border border-blue-400/20 bg-blue-500/[0.07] p-5 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl border border-blue-400/20 bg-blue-500/10">
+                      <Users className="h-5 w-5 text-blue-300" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-white">پروفایل اجتماعی FilmTrack را بساز</p>
+                      <p className="mt-1 max-w-xl text-xs leading-6 text-slate-400">یک username انتخاب کن تا بتوانی اعضای عمومی را پیدا کنی، دنبال کنی و فعالیت‌های عمومی خودت را با کنترل کامل حریم خصوصی نمایش بدهی.</p>
+                    </div>
+                  </div>
+                  <Link href="/dashboard/profile">
+                    <Button className="min-h-11 rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 px-5 font-black text-white">ساخت پروفایل</Button>
+                  </Link>
+                </div>
+              </div>
+            )
+          ) : null}
+
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
               <h2 className="text-xl font-black sm:text-2xl">فهرست تماشای تو</h2>
@@ -157,7 +219,15 @@ export default async function DashboardPage() {
             <div className="mt-4 grid gap-2">
               <Link href="/dashboard/continue"><Button className="min-h-11 w-full justify-start rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 text-white"><PlayCircle className="ml-2 h-4 w-4" /> ادامه تماشا</Button></Link>
               <Link href="/dashboard/profile"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-violet-400/20 bg-violet-500/10 text-violet-100 hover:bg-violet-500/15"><UserRound className="ml-2 h-4 w-4" /> پروفایل من</Button></Link>
-              <Link href={`/profile/${userId}`}><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Globe2 className="ml-2 h-4 w-4" /> پروفایل عمومی</Button></Link>
+              {communityEnabled && communityProfile ? (
+                <>
+                  <Link href="/community"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-blue-400/20 bg-blue-500/10 text-blue-100 hover:bg-blue-500/15"><Users className="ml-2 h-4 w-4" /> کشف اعضا</Button></Link>
+                  <Link href="/dashboard/community"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Users className="ml-2 h-4 w-4" /> شبکه من</Button></Link>
+                </>
+              ) : null}
+              {communityProfile?.visibility === "public" ? (
+                <Link href={`/u/${encodeURIComponent(communityProfile.username)}`}><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Globe2 className="ml-2 h-4 w-4" /> پروفایل عمومی</Button></Link>
+              ) : null}
               <Link href="/calendar"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><CalendarDays className="ml-2 h-4 w-4" /> تقویم انتشار</Button></Link>
               <Link href="/movies"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Film className="ml-2 h-4 w-4" /> کشف فیلم‌ها</Button></Link>
             </div>
