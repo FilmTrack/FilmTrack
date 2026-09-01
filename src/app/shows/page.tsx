@@ -55,35 +55,38 @@ export default async function ShowsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {shows.map((show, index) => (
-              <Link href={`/title/${show.id}?type=tv`} key={show.id} className="group min-w-0">
-                <article className="relative aspect-[2/3] overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220] shadow-lg shadow-black/20 transition duration-300 group-hover:-translate-y-1 group-hover:border-violet-400/30">
-                  {show.poster_path ? (
-                    <TmdbImage
-                      src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
-                      alt={`پوستر ${show.name || "سریال"}`}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                    />
-                  ) : (
-                    <div className="flex h-full flex-col justify-between bg-[radial-gradient(circle_at_30%_18%,rgba(124,58,237,.34),transparent_30%),linear-gradient(145deg,#101b31,#080d19_65%,#132e3b)] p-4">
-                      <span className="text-xs font-black text-violet-200">FILMTRACK SERIES</span>
-                      <div>
-                        <span className="text-4xl font-black text-white/10">{String(index + 1).padStart(2, "0")}</span>
-                        <p className="mt-2 text-lg font-black leading-7 text-white">{show.name || "سریال"}</p>
+            {shows.map((show, index) => {
+              const href = isDemo ? `/qa/title/${show.id}?type=tv` : `/title/${show.id}?type=tv`;
+              return (
+                <Link href={href} key={show.id} className="group min-w-0">
+                  <article className="relative aspect-[2/3] overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220] shadow-lg shadow-black/20 transition duration-300 group-hover:-translate-y-1 group-hover:border-violet-400/30">
+                    {show.poster_path ? (
+                      <TmdbImage
+                        src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
+                        alt={`پوستر ${show.name || "سریال"}`}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      />
+                    ) : (
+                      <div className="flex h-full flex-col justify-between bg-[radial-gradient(circle_at_30%_18%,rgba(124,58,237,.34),transparent_30%),linear-gradient(145deg,#101b31,#080d19_65%,#132e3b)] p-4">
+                        <span className="text-xs font-black text-violet-200">FILMTRACK SERIES</span>
+                        <div>
+                          <span className="text-4xl font-black text-white/10">{String(index + 1).padStart(2, "0")}</span>
+                          <p className="mt-2 text-lg font-black leading-7 text-white">{show.name || "سریال"}</p>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/55 to-transparent" />
-                  {typeof show.vote_average === "number" && show.vote_average > 0 && (
-                    <span className="absolute left-2 bottom-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[11px] font-black text-amber-300 backdrop-blur">
-                      <Star className="h-3 w-3 fill-current" /> {show.vote_average.toFixed(1)}
-                    </span>
-                  )}
-                </article>
-                <p className="mt-2 truncate text-sm font-bold text-slate-200 group-hover:text-white">{show.name || "بدون عنوان"}</p>
-                {show.first_air_date && <p className="mt-1 text-xs text-slate-500">{new Date(show.first_air_date).getFullYear()}</p>}
-              </Link>
-            ))}
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/55 to-transparent" />
+                    {typeof show.vote_average === "number" && show.vote_average > 0 && (
+                      <span className="absolute left-2 bottom-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[11px] font-black text-amber-300 backdrop-blur">
+                        <Star className="h-3 w-3 fill-current" /> {show.vote_average.toFixed(1)}
+                      </span>
+                    )}
+                  </article>
+                  <p className="mt-2 truncate text-sm font-bold text-slate-200 group-hover:text-white">{show.name || "بدون عنوان"}</p>
+                  {show.first_air_date && <p className="mt-1 text-xs text-slate-500">{new Date(show.first_air_date).getFullYear()}</p>}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
