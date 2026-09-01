@@ -45,8 +45,8 @@ export async function setCommunityFollow(
     const { error } = await supabase
       .from("community_follows")
       .upsert(
-        { follower_id: user.id, following_id: target.user_id },
-        { onConflict: "follower_id,following_id", ignoreDuplicates: true },
+        { follower_user_id: user.id, followed_user_id: target.user_id },
+        { onConflict: "follower_user_id,followed_user_id", ignoreDuplicates: true },
       );
 
     if (error) {
@@ -59,8 +59,8 @@ export async function setCommunityFollow(
   const { error } = await supabase
     .from("community_follows")
     .delete()
-    .eq("follower_id", user.id)
-    .eq("following_id", target.user_id);
+    .eq("follower_user_id", user.id)
+    .eq("followed_user_id", target.user_id);
 
   if (error) {
     return { ok: false, code: "database_error", message: "Unfollow could not be saved." };
