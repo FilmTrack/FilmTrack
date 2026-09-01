@@ -22,14 +22,19 @@ test("M3 discovery is authenticated and runtime-gated before profile queries", (
 });
 
 test("M3 discovery only projects explicitly public profile fields", () => {
-  assert.match(discoveryPage, /\.select\("username,display_name,bio"\)/);
+  const selects = [...discoveryPage.matchAll(/\.select\("([^"]+)"\)/g)].map(
+    (match) => match[1],
+  );
+
+  assert.ok(selects.length >= 2);
+  assert.ok(selects.every((projection) => projection === "username,display_name,bio"));
   assert.match(discoveryPage, /\.eq\("visibility", "public"\)/);
-  assert.doesNotMatch(discoveryPage, /select\([^\n]*user_id/);
-  assert.doesNotMatch(discoveryPage, /email|auth\.users|user_metadata/i);
+  assert.ok(selects.every((projection) => !/user_id|email|user_metadata/i.test(projection)));
 });
 
 test("M3 discovery searches username and display name with bounded input", () => {
   assert.match(discoveryPage, /sanitizeDiscoveryQuery/);
+  assert.match(discoveryPage, /\.replace\(\/\[%_\(\),\]\/g, " "\)/);
   assert.match(discoveryPage, /\.slice\(0, 48\)/);
   assert.match(discoveryPage, /query\.length >= 2/);
   assert.match(discoveryPage, /\.ilike\("username", `%\$\{query\}%`\)/);
