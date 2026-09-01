@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpLeft, Github, Sparkles } from "lucide-react";
+import { ArrowUpLeft, Code2, Sparkles } from "lucide-react";
 import Logo from "./Logo";
 
 const footerLinkClass =
@@ -41,7 +41,7 @@ export default function Footer() {
                 <Link href="/privacy" className={footerLinkClass}>حریم خصوصی</Link>
                 <Link href="/terms" className={footerLinkClass}>قوانین و مقررات</Link>
                 <a href="https://github.com/FilmTrack/FilmTrack" target="_blank" rel="noopener noreferrer" className={`${footerLinkClass} gap-2`}>
-                  <Github className="h-4 w-4" /> گیت‌هاب
+                  <Code2 className="h-4 w-4" /> گیت‌هاب
                 </a>
               </nav>
             </div>
