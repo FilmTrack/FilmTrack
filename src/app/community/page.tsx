@@ -17,7 +17,7 @@ type CommunityDiscoveryPageProps = {
 
 function sanitizeDiscoveryQuery(value: string | undefined) {
   return (value ?? "")
-    .replace(/[%(),]/g, " ")
+    .replace(/[%_(),]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 48);
