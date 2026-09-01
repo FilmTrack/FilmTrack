@@ -22,8 +22,8 @@ test("public copy does not make unsupported community or behavioral claims", () 
     assert.doesNotMatch(source, /بزرگترین جامعه/);
     assert.doesNotMatch(source, /بیشترین بیننده|بیشترین اضافه‌شده|Binged/);
   }
-  assert.match(home, /سریال‌های محبوب TMDB/);
-  assert.match(home, /سریال‌های برتر TMDB/);
+  assert.match(home, /محبوب‌ترین سریال‌ها برای شروع/);
+  assert.match(home, /سریال‌های تحسین‌شده/);
 });
 
 test("SEO endpoints use the canonical production host", () => {
