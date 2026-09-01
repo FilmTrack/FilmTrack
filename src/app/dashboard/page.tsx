@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarDays, CheckCircle2, Eye, Film, Globe2, PlayCircle, Sparkles } from "lucide-react";
+import { CalendarDays, CheckCircle2, Eye, Film, Globe2, PlayCircle, Sparkles, UserRound } from "lucide-react";
 
 import ListVisibilityToggle from "@/components/ListVisibilityToggle";
 import TmdbImage from "@/components/TmdbImage";
@@ -156,6 +156,7 @@ export default async function DashboardPage() {
             <h2 className="text-sm font-black">میانبرهای حساب</h2>
             <div className="mt-4 grid gap-2">
               <Link href="/dashboard/continue"><Button className="min-h-11 w-full justify-start rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 text-white"><PlayCircle className="ml-2 h-4 w-4" /> ادامه تماشا</Button></Link>
+              <Link href="/dashboard/profile"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-violet-400/20 bg-violet-500/10 text-violet-100 hover:bg-violet-500/15"><UserRound className="ml-2 h-4 w-4" /> پروفایل من</Button></Link>
               <Link href={`/profile/${userId}`}><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Globe2 className="ml-2 h-4 w-4" /> پروفایل عمومی</Button></Link>
               <Link href="/calendar"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><CalendarDays className="ml-2 h-4 w-4" /> تقویم انتشار</Button></Link>
               <Link href="/movies"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Film className="ml-2 h-4 w-4" /> کشف فیلم‌ها</Button></Link>
