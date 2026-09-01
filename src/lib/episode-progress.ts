@@ -20,6 +20,11 @@ export type NextEpisodeResult = {
   nextEpisode: EpisodeDescriptor | null;
 };
 
+export type ContinueWatchingItem = NextEpisodeResult & {
+  titleId: number;
+  lastWatchedAt: string | null;
+};
+
 function episodeKey(value: EpisodeIdentity) {
   return `${value.titleId}:${value.seasonNumber}:${value.episodeNumber}`;
 }
@@ -34,7 +39,8 @@ export function normalizeEpisodeProgress(entries: EpisodeProgressEntry[]) {
       !Number.isInteger(entry.episodeNumber) ||
       entry.titleId <= 0 ||
       entry.seasonNumber < 0 ||
-      entry.episodeNumber <= 0
+      entry.episodeNumber <= 0 ||
+      Number.isNaN(Date.parse(entry.watchedAt))
     ) {
       continue;
     }
@@ -85,4 +91,26 @@ export function deriveNextEpisode(
   const progressPercent = total === 0 ? 0 : Math.round((completed / total) * 100);
 
   return { completed, total, progressPercent, nextEpisode };
+}
+
+export function deriveContinueWatching(
+  episodes: EpisodeDescriptor[],
+  progress: EpisodeProgressEntry[],
+): ContinueWatchingItem[] {
+  const normalized = normalizeEpisodeProgress(progress);
+  const titleIds = [...new Set(normalized.map((entry) => entry.titleId))];
+
+  return titleIds
+    .map((titleId) => {
+      const result = deriveNextEpisode(titleId, episodes, normalized);
+      const titleProgress = normalized.filter((entry) => entry.titleId === titleId);
+      const lastWatchedAt = titleProgress.reduce<string | null>((latest, entry) => {
+        if (!latest || Date.parse(entry.watchedAt) > Date.parse(latest)) return entry.watchedAt;
+        return latest;
+      }, null);
+
+      return { titleId, lastWatchedAt, ...result };
+    })
+    .filter((item) => item.completed > 0 && item.nextEpisode !== null)
+    .sort((a, b) => Date.parse(b.lastWatchedAt ?? "") - Date.parse(a.lastWatchedAt ?? ""));
 }
