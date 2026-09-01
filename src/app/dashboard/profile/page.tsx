@@ -3,9 +3,15 @@ import { ArrowRight, ShieldCheck, UserRound } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import CommunityProfileEditor from "@/components/CommunityProfileEditor";
-import { Button } from "@/components/ui/button";
 import { isCommunityRuntimeEnabled } from "@/lib/m3/readiness";
 import { createClient } from "@/lib/supabase/server";
+
+type CommunityProfileRow = {
+  username: string;
+  display_name: string | null;
+  bio: string | null;
+  visibility: "private" | "public";
+};
 
 export default async function CommunityProfilePage() {
   const supabase = await createClient();
@@ -15,12 +21,7 @@ export default async function CommunityProfilePage() {
   if (!userId) redirect("/auth");
 
   const enabled = isCommunityRuntimeEnabled();
-  let profile: {
-    username: string;
-    display_name: string | null;
-    bio: string | null;
-    visibility: "private" | "public";
-  } | null = null;
+  let profile: CommunityProfileRow | null = null;
 
   // Never access M3 tables while the runtime gate is disabled. This keeps the
   // page safe before the repository-only migration is explicitly approved.
@@ -31,19 +32,20 @@ export default async function CommunityProfilePage() {
       .eq("user_id", userId)
       .maybeSingle();
 
-    profile = data as typeof profile;
+    profile = data as unknown as CommunityProfileRow | null;
   }
 
   return (
     <main className="min-h-screen bg-[#050914] text-white" dir="rtl">
       <section className="border-b border-white/5 bg-[radial-gradient(circle_at_80%_0%,rgba(37,99,235,.16),transparent_32%),radial-gradient(circle_at_20%_5%,rgba(124,58,237,.14),transparent_28%)]">
         <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
-          <Button asChild variant="ghost" className="mb-5 rounded-xl text-slate-300 hover:bg-white/5 hover:text-white">
-            <Link href="/dashboard">
-              <ArrowRight className="ml-2 h-4 w-4" />
-              بازگشت به داشبورد
-            </Link>
-          </Button>
+          <Link
+            href="/dashboard"
+            className="mb-5 inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-bold text-slate-300 transition hover:bg-white/5 hover:text-white"
+          >
+            <ArrowRight className="ml-2 h-4 w-4" />
+            بازگشت به داشبورد
+          </Link>
 
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
