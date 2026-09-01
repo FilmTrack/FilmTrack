@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Clock3, LockKeyhole, UserRound } from "lucide-react";
+import { ArrowRight, Clock3, LockKeyhole, MessageCircle, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import CommunityFollowButton from "@/components/CommunityFollowButton";
@@ -19,6 +19,15 @@ type PublicListRow = {
   title_id: number;
   title_type: "movie" | "tv";
   status: "plan_to_watch" | "watching" | "completed" | "on_hold" | "dropped";
+  created_at: string;
+};
+
+type PublicCommentRow = {
+  id: number;
+  title_id: number;
+  title_type: "movie" | "tv";
+  content: string;
+  is_spoiler: boolean;
   created_at: string;
 };
 
@@ -135,16 +144,25 @@ export default async function CommunityPublicProfile({
   }
 
   // user_lists has an explicit public-read RLS policy keyed by is_public=true.
-  // Ratings and diary entries remain owner-only and are intentionally excluded.
-  const { data: publicListData } = await supabase
-    .from("user_lists")
-    .select("id,title_id,title_type,status,created_at")
-    .eq("user_id", profile.user_id)
-    .eq("is_public", true)
-    .order("created_at", { ascending: false })
-    .limit(12);
+  // comments is already publicly readable. Ratings and diary remain owner-only.
+  const [{ data: publicListData }, { data: publicCommentData }] = await Promise.all([
+    supabase
+      .from("user_lists")
+      .select("id,title_id,title_type,status,created_at")
+      .eq("user_id", profile.user_id)
+      .eq("is_public", true)
+      .order("created_at", { ascending: false })
+      .limit(12),
+    supabase
+      .from("comments")
+      .select("id,title_id,title_type,content,is_spoiler,created_at")
+      .eq("user_id", profile.user_id)
+      .order("created_at", { ascending: false })
+      .limit(8),
+  ]);
 
   const publicList = (publicListData ?? []) as unknown as PublicListRow[];
+  const publicComments = (publicCommentData ?? []) as unknown as PublicCommentRow[];
   const tmdbTitles = await Promise.all(
     publicList.map((item) =>
       fetchTmdbTitle(process.env.TMDB_API_KEY, item.title_id, item.title_type),
@@ -247,6 +265,52 @@ export default async function CommunityPublicProfile({
                 </Link>
               );
             })}
+          </div>
+        )}
+
+        <div className="mt-10 mb-5 flex items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-violet-200">
+              <MessageCircle className="h-4 w-4" />
+              <span className="text-xs font-black">گفت‌وگو</span>
+            </div>
+            <h2 className="mt-2 text-xl font-black">نظرهای اخیر</h2>
+            <p className="mt-1 text-sm leading-7 text-slate-500">
+              متن نظرهای اسپویلردار در پروفایل افشا نمی‌شود.
+            </p>
+          </div>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-slate-300">
+            {publicComments.length} نظر
+          </span>
+        </div>
+
+        {publicComments.length === 0 ? (
+          <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 sm:p-8">
+            <p className="text-sm leading-7 text-slate-400">این عضو هنوز نظر عمومی‌ای ثبت نکرده است.</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {publicComments.map((comment) => (
+              <Link
+                key={comment.id}
+                href={`/title/${comment.title_id}?type=${comment.title_type}`}
+                className="rounded-2xl border border-white/10 bg-white/[0.025] p-4 transition hover:border-violet-400/30 hover:bg-white/[0.05]"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-bold text-violet-300">
+                    {comment.title_type === "movie" ? "فیلم" : "سریال"} #{comment.title_id}
+                  </span>
+                  <span className="text-[11px] text-slate-600">
+                    {new Date(comment.created_at).toLocaleDateString("fa-IR")}
+                  </span>
+                </div>
+                <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-300">
+                  {comment.is_spoiler
+                    ? "این نظر حاوی اسپویلر است؛ متن فقط در صفحه عنوان و با کنترل اسپویلر نمایش داده می‌شود."
+                    : comment.content}
+                </p>
+              </Link>
+            ))}
           </div>
         )}
 
