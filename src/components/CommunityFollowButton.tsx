@@ -1,9 +1,12 @@
 "use client";
 
-import { Loader2, UserCheck, UserPlus } from "lucide-react";
-import { useState, useTransition } from "react";
+import { Loader2, UserCheck, UserPlus, UsersRound } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
 
-import { setCommunityFollow } from "@/lib/m3/community-follow-client";
+import {
+  getCommunityRelationship,
+  setCommunityFollow,
+} from "@/lib/m3/community-follow-client";
 
 type CommunityFollowButtonProps = {
   username: string;
@@ -15,8 +18,21 @@ export default function CommunityFollowButton({
   initialFollowing,
 }: CommunityFollowButtonProps) {
   const [following, setFollowing] = useState(initialFollowing);
+  const [followsYou, setFollowsYou] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void getCommunityRelationship(username).then((result) => {
+      if (!cancelled && result.ok) setFollowsYou(result.followsYou);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [username]);
 
   const handleToggle = () => {
     setMessage(null);
@@ -61,6 +77,13 @@ export default function CommunityFollowButton({
         )}
         {isPending ? "در حال ذخیره…" : following ? "دنبال می‌کنید" : "دنبال کردن"}
       </button>
+
+      {followsYou ? (
+        <p className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300">
+          <UsersRound className="h-3.5 w-3.5" /> این عضو هم شما را دنبال می‌کند
+        </p>
+      ) : null}
+
       {message ? (
         <p className="max-w-xs text-xs leading-5 text-rose-300" role="status">
           {message}
