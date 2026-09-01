@@ -1,4 +1,4 @@
-import type { TmdbMediaSummary } from "@/lib/tmdb";
+import type { TmdbMediaSummary, TmdbMediaType, TmdbTitleDetails } from "@/lib/tmdb";
 
 export const isLocalVisualQa = process.env.NODE_ENV !== "production";
 
@@ -31,6 +31,52 @@ export const demoShows: TmdbMediaSummary[] = [
   { id: 76479, name: "پسرها", poster_path: null, backdrop_path: null, vote_average: 8.4, first_air_date: "2019-07-25" },
   { id: 94997, name: "خانه اژدها", poster_path: null, backdrop_path: null, vote_average: 8.3, first_air_date: "2022-08-21" },
 ];
+
+const demoOverview =
+  "این داده فقط برای بررسی محلی رابط کاربری FilmTrack استفاده می‌شود تا ساختار صفحه جزئیات، امتیازها، دفترچه تماشا و نمایش موبایل بدون وابستگی به سرویس بیرونی قابل ارزیابی باشد.";
+
+export function getDemoTitleDetails(id: number, type: TmdbMediaType): TmdbTitleDetails | null {
+  if (!isLocalVisualQa) return null;
+
+  const source = type === "tv" ? demoShows : demoMovies;
+  const item = source.find((entry) => entry.id === id);
+  if (!item) return null;
+
+  const title = item.title || item.name || "FilmTrack";
+
+  return {
+    ...item,
+    overview: demoOverview,
+    runtime: type === "movie" ? 128 : undefined,
+    episode_run_time: type === "tv" ? [52] : undefined,
+    vote_count: 248930,
+    original_language: "en",
+    genres: [
+      { id: 18, name: "درام" },
+      { id: 53, name: "هیجان‌انگیز" },
+    ],
+    credits: {
+      crew: [{ id: 1, job: "Director", name: "کارگردان نمونه FilmTrack" }],
+      cast: [
+        { id: 101, name: "بازیگر اول", character: "شخصیت اصلی", profile_path: null },
+        { id: 102, name: "بازیگر دوم", character: "شخصیت دوم", profile_path: null },
+        { id: 103, name: "بازیگر سوم", character: "شخصیت سوم", profile_path: null },
+        { id: 104, name: "بازیگر چهارم", character: "شخصیت چهارم", profile_path: null },
+      ],
+    },
+    videos: { results: [] },
+    seasons:
+      type === "tv"
+        ? [
+            { id: 1, name: "فصل ۱", season_number: 1, episode_count: 10, poster_path: null, overview: demoOverview },
+            { id: 2, name: "فصل ۲", season_number: 2, episode_count: 10, poster_path: null, overview: demoOverview },
+          ]
+        : undefined,
+    imdb_id: type === "movie" ? `tt${String(id).padStart(7, "0")}` : undefined,
+    title: type === "movie" ? title : undefined,
+    name: type === "tv" ? title : undefined,
+  };
+}
 
 export function demoCalendarItems(): Array<TmdbMediaSummary & { type: "movie" | "tv"; date: string }> {
   const base = new Date();
