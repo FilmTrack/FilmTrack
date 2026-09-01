@@ -137,6 +137,11 @@ export default async function DashboardPage() {
                         <Link href={`/title/${db.title_id}?type=${db.title_type}`}>
                           <Button size="sm" variant="outline" className="rounded-xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.07]">مشاهده و ویرایش</Button>
                         </Link>
+                        {db.title_type === "tv" && (
+                          <Link href={`/title/${db.title_id}/episodes`}>
+                            <Button size="sm" variant="outline" className="rounded-xl border-blue-400/20 bg-blue-500/10 text-blue-200 hover:bg-blue-500/15">رهگیری قسمت‌ها</Button>
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -150,9 +155,10 @@ export default async function DashboardPage() {
           <div className="rounded-2xl border border-white/10 bg-[#0b1220]/90 p-5">
             <h2 className="text-sm font-black">میانبرهای حساب</h2>
             <div className="mt-4 grid gap-2">
+              <Link href="/dashboard/continue"><Button className="min-h-11 w-full justify-start rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 text-white"><PlayCircle className="ml-2 h-4 w-4" /> ادامه تماشا</Button></Link>
               <Link href={`/profile/${userId}`}><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Globe2 className="ml-2 h-4 w-4" /> پروفایل عمومی</Button></Link>
               <Link href="/calendar"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><CalendarDays className="ml-2 h-4 w-4" /> تقویم انتشار</Button></Link>
-              <Link href="/movies"><Button className="min-h-11 w-full justify-start rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 text-white"><Film className="ml-2 h-4 w-4" /> کشف فیلم‌ها</Button></Link>
+              <Link href="/movies"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Film className="ml-2 h-4 w-4" /> کشف فیلم‌ها</Button></Link>
             </div>
           </div>
         </aside>
