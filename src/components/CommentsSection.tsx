@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { isCommunityRuntimeEnabled } from "@/lib/m3/readiness"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -12,7 +14,11 @@ type Comment = {
   content: string
   is_spoiler: boolean
   created_at: string
+}
 
+type CommentAuthor = {
+  username: string
+  displayName: string | null
 }
 
 export default function CommentsSection({ 
@@ -33,6 +39,56 @@ export default function CommentsSection({
   const [isSpoiler, setIsSpoiler] = useState(false)
   const [loading, setLoading] = useState(false)
   const [revealedSpoilers, setRevealedSpoilers] = useState<string[]>([])
+  const [authors, setAuthors] = useState<Record<string, CommentAuthor>>({})
+
+  useEffect(() => {
+    if (!isLoggedIn || !isCommunityRuntimeEnabled() || initialComments.length === 0) return
+
+    let cancelled = false
+
+    const loadAuthors = async () => {
+      const commentIds = initialComments.map((comment) => comment.id)
+      const { data: commentOwners, error: ownerError } = await supabase
+        .from("comments")
+        .select("id,user_id")
+        .in("id", commentIds)
+
+      if (ownerError || !commentOwners?.length) return
+
+      const userIds = [...new Set(commentOwners.map((row) => row.user_id).filter(Boolean))]
+      if (userIds.length === 0) return
+
+      const { data: publicProfiles, error: profileError } = await supabase
+        .from("community_profiles")
+        .select("user_id,username,display_name")
+        .eq("visibility", "public")
+        .in("user_id", userIds)
+
+      if (profileError || !publicProfiles?.length || cancelled) return
+
+      const profileByUserId = new Map(
+        publicProfiles.map((profile) => [profile.user_id, profile]),
+      )
+      const nextAuthors: Record<string, CommentAuthor> = {}
+
+      for (const owner of commentOwners) {
+        const profile = profileByUserId.get(owner.user_id)
+        if (!profile) continue
+        nextAuthors[String(owner.id)] = {
+          username: profile.username,
+          displayName: profile.display_name,
+        }
+      }
+
+      if (!cancelled) setAuthors(nextAuthors)
+    }
+
+    void loadAuthors()
+
+    return () => {
+      cancelled = true
+    }
+  }, [initialComments, isLoggedIn, supabase])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,7 +116,7 @@ export default function CommentsSection({
     } else {
       setContent("")
       setIsSpoiler(false)
-      router.refresh() // رفرش صفحه تا نظر جدید بیاید
+      router.refresh()
     }
     setLoading(false)
   }
@@ -73,7 +129,6 @@ export default function CommentsSection({
     <div className="mt-12 border-t border-gray-800 pt-8">
       <h2 className="text-2xl font-bold mb-6">نظرات کاربران 💬</h2>
 
-      {/* فرم ارسال نظر */}
       {isLoggedIn ? (
         <form onSubmit={handleSubmit} className="mb-8 bg-[#1a1a1a] p-4 rounded-xl border border-gray-800">
           <Textarea
@@ -106,42 +161,54 @@ export default function CommentsSection({
         </div>
       )}
 
-      {/* لیست نظرات */}
       <div className="space-y-4">
         {initialComments.length === 0 ? (
           <p className="text-gray-500 text-center py-8">هنوز نظری برای این عنوان ثبت نشده است. اولین نفر باشید!</p>
         ) : (
-          initialComments.map((comment) => (
-            <div key={comment.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-800">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-blue-500 text-sm">
-                  کاربر FilmTrack
-                </span>
-                <span className="text-xs text-gray-600">
-                  {new Date(comment.created_at).toLocaleDateString('fa-IR')}
-                </span>
-              </div>
-              
-              <div className={`relative ${comment.is_spoiler && !revealedSpoilers.includes(comment.id) ? 'blur-md select-none' : ''}`}>
-                <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                  {comment.content}
-                </p>
-              </div>
+          initialComments.map((comment) => {
+            const author = authors[comment.id]
 
-              {comment.is_spoiler && !revealedSpoilers.includes(comment.id) && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-black/80 border-red-600 text-red-500 hover:bg-red-600 hover:text-white"
-                    onClick={() => revealSpoiler(comment.id)}
-                  >
-                    ⚠️ این نظر حاوی اسپویلر است. برای دیدن کلیک کنید.
-                  </Button>
+            return (
+              <div key={comment.id} className="relative bg-[#1a1a1a] p-4 rounded-xl border border-gray-800">
+                <div className="flex items-center justify-between mb-2">
+                  {author ? (
+                    <Link
+                      href={`/u/${author.username}`}
+                      className="font-bold text-blue-500 text-sm hover:text-blue-300"
+                    >
+                      {author.displayName || `@${author.username}`}
+                    </Link>
+                  ) : (
+                    <span className="font-bold text-blue-500 text-sm">
+                      کاربر FilmTrack
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-600">
+                    {new Date(comment.created_at).toLocaleDateString('fa-IR')}
+                  </span>
                 </div>
-              )}
-            </div>
-          ))
+                
+                <div className={`relative ${comment.is_spoiler && !revealedSpoilers.includes(comment.id) ? 'blur-md select-none' : ''}`}>
+                  <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                    {comment.content}
+                  </p>
+                </div>
+
+                {comment.is_spoiler && !revealedSpoilers.includes(comment.id) && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="bg-black/80 border-red-600 text-red-500 hover:bg-red-600 hover:text-white"
+                      onClick={() => revealSpoiler(comment.id)}
+                    >
+                      ⚠️ این نظر حاوی اسپویلر است. برای دیدن کلیک کنید.
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )
+          })
         )}
       </div>
     </div>
