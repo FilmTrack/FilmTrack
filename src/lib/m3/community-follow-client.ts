@@ -7,6 +7,51 @@ export type CommunityFollowResult =
   | { ok: true; following: boolean }
   | { ok: false; code: "disabled" | "unauthenticated" | "self_follow" | "profile_not_found" | "database_error"; message: string };
 
+export type CommunityRelationshipResult =
+  | { ok: true; followsYou: boolean }
+  | { ok: false; code: "disabled" | "unauthenticated" | "profile_not_found" | "database_error" };
+
+async function resolveCommunityTarget(targetUsername: string) {
+  const username = targetUsername.trim().toLowerCase();
+  if (!username) return null;
+
+  const supabase = createClient();
+  const { data: target, error } = await supabase
+    .from("community_profiles")
+    .select("user_id,username,visibility")
+    .eq("username", username)
+    .eq("visibility", "public")
+    .maybeSingle();
+
+  if (error || !target) return null;
+  return { supabase, target };
+}
+
+export async function getCommunityRelationship(
+  targetUsername: string,
+): Promise<CommunityRelationshipResult> {
+  if (!isCommunityRuntimeEnabled()) return { ok: false, code: "disabled" };
+
+  const resolved = await resolveCommunityTarget(targetUsername);
+  if (!resolved) return { ok: false, code: "profile_not_found" };
+
+  const { supabase, target } = resolved;
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { ok: false, code: "unauthenticated" };
+  if (target.user_id === user.id) return { ok: true, followsYou: false };
+
+  // RLS permits this read because the viewer is the followed participant.
+  const { data: reverseEdge, error } = await supabase
+    .from("community_follows")
+    .select("follower_user_id")
+    .eq("follower_user_id", target.user_id)
+    .eq("followed_user_id", user.id)
+    .maybeSingle();
+
+  if (error) return { ok: false, code: "database_error" };
+  return { ok: true, followsYou: Boolean(reverseEdge) };
+}
+
 export async function setCommunityFollow(
   targetUsername: string,
   shouldFollow: boolean,
@@ -15,26 +60,16 @@ export async function setCommunityFollow(
     return { ok: false, code: "disabled", message: "Community runtime is not enabled." };
   }
 
-  const username = targetUsername.trim().toLowerCase();
-  if (!username) {
+  const resolved = await resolveCommunityTarget(targetUsername);
+  if (!resolved) {
     return { ok: false, code: "profile_not_found", message: "Community profile was not found." };
   }
 
-  const supabase = createClient();
+  const { supabase, target } = resolved;
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
   if (authError || !user) {
     return { ok: false, code: "unauthenticated", message: "Sign in to follow FilmTrack members." };
-  }
-
-  const { data: target, error: targetError } = await supabase
-    .from("community_profiles")
-    .select("user_id,username,visibility")
-    .eq("username", username)
-    .maybeSingle();
-
-  if (targetError || !target) {
-    return { ok: false, code: "profile_not_found", message: "Community profile was not found." };
   }
 
   if (target.user_id === user.id) {
