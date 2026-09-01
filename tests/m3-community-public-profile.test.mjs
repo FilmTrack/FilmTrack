@@ -18,6 +18,10 @@ const listVisibilityMigration = await readFile(
   new URL("../supabase/migrations/20260822093000_m0_privacy_visibility.sql", import.meta.url),
   "utf8",
 );
+const dataBoundaryMigration = await readFile(
+  new URL("../supabase/migrations/20260819094500_m0_data_boundary_foundation.sql", import.meta.url),
+  "utf8",
+);
 const ratingDiaryMigration = await readFile(
   new URL("../supabase/migrations/20260830115500_m2_rating_diary_foundation.sql", import.meta.url),
   "utf8",
@@ -61,6 +65,18 @@ test("M3 activity surface reads only explicitly public user-list rows", () => {
   assert.match(publicProfile, /\.eq\("is_public", true\)/);
   assert.match(publicProfile, /\.limit\(12\)/);
   assert.match(listVisibilityMigration, /using \(is_public = true\)/i);
+});
+
+test("M3 public comment activity uses the existing public comment boundary", () => {
+  assert.match(publicProfile, /\.from\("comments"\)/);
+  assert.match(publicProfile, /\.select\("id,title_id,title_type,content,is_spoiler,created_at"\)/);
+  assert.match(publicProfile, /\.limit\(8\)/);
+  assert.match(dataBoundaryMigration, /create policy "Anyone can view comments"[\s\S]*using \(true\)/i);
+});
+
+test("M3 public comment activity never reveals spoiler text in the profile summary", () => {
+  assert.match(publicProfile, /comment\.is_spoiler/);
+  assert.match(publicProfile, /این نظر حاوی اسپویلر است/);
 });
 
 test("M3 activity surface preserves owner-only rating and diary privacy", () => {
