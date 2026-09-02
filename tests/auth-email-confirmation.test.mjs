@@ -6,7 +6,7 @@ const authPage = await readFile(new URL("../src/app/auth/page.tsx", import.meta.
 
 test("email signup uses a production-safe confirmation redirect", () => {
   assert.match(authPage, /emailRedirectTo:\s*confirmationRedirect\(\)/);
-  assert.match(authPage, /window\.location\.origin\/auth\?confirmed=1/);
+  assert.match(authPage, /\$\{window\.location\.origin\}\/auth\?confirmed=1/);
 });
 
 test("pending email confirmation is not tracked as completed signup", () => {
