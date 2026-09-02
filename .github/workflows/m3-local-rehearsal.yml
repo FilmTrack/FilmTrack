@@ -24,6 +24,9 @@ jobs:
         with:
           version: 2.116.0
 
+      - name: Inject local-only legacy baseline
+        run: cp supabase/local/legacy_pre_m0_baseline.sql supabase/migrations/20260818000000_local_legacy_baseline.sql
+
       - name: Start local Supabase database
         run: supabase db start
 
