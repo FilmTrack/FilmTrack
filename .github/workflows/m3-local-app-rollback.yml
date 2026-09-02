@@ -1,0 +1,50 @@
+name: M3 Local App Smoke and Rollback
+
+on:
+  pull_request:
+    paths:
+      - "src/lib/m3/**"
+      - "src/app/community/**"
+      - "tests/m3-community-local-app-rollback.test.mjs"
+      - "package.json"
+      - ".github/workflows/m3-local-app-rollback.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  app-flag-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run M3 rollback contract
+        run: node --test tests/m3-community-local-app-rollback.test.mjs
+
+      - name: Build with Community disabled
+        env:
+          NEXT_PUBLIC_FILMTRACK_M3_COMMUNITY_ENABLED: "false"
+        run: npm run build
+
+      - name: Build with Community enabled
+        env:
+          NEXT_PUBLIC_FILMTRACK_M3_COMMUNITY_ENABLED: "true"
+        run: npm run build
+
+      - name: Rebuild after rollback to disabled
+        env:
+          NEXT_PUBLIC_FILMTRACK_M3_COMMUNITY_ENABLED: "false"
+        run: npm run build
