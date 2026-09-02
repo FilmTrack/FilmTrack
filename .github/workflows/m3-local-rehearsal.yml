@@ -1,0 +1,44 @@
+name: M3 Zero-Cost Supabase Rehearsal
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/m3-local-rehearsal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-database-rehearsal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Inject local-only legacy baseline
+        run: cp supabase/local/legacy_pre_m0_baseline.sql supabase/migrations/20260818000000_local_legacy_baseline.sql
+
+      - name: Start local Supabase database
+        run: supabase db start
+
+      - name: Rebuild database from migrations
+        run: supabase db reset
+
+      - name: Lint local database
+        run: supabase db lint --level error
+
+      - name: Run pgTAP database contracts
+        run: supabase test db
+
+      - name: Stop local Supabase database
+        if: always()
+        run: supabase stop --no-backup
