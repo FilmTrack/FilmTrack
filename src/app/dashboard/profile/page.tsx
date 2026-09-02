@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowRight, Eye, Search, ShieldCheck, UserRound, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import CommunityProfileEditor from "@/components/CommunityProfileEditor";
@@ -35,6 +35,11 @@ export default async function CommunityProfilePage() {
     profile = data as unknown as CommunityProfileRow | null;
   }
 
+  const publicProfileHref =
+    profile?.visibility === "public" && profile.username
+      ? `/u/${encodeURIComponent(profile.username)}`
+      : null;
+
   return (
     <main className="min-h-screen bg-[#050914] text-white" dir="rtl">
       <section className="border-b border-white/5 bg-[radial-gradient(circle_at_80%_0%,rgba(37,99,235,.16),transparent_32%),radial-gradient(circle_at_20%_5%,rgba(124,58,237,.14),transparent_28%)]">
@@ -58,9 +63,35 @@ export default async function CommunityProfilePage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2 rounded-2xl border border-emerald-400/15 bg-emerald-500/5 px-4 py-3 text-xs font-bold text-emerald-200">
-              <ShieldCheck className="h-4 w-4" />
-              حریم خصوصی پیش‌فرض: خصوصی
+            <div className="flex flex-col gap-2 sm:items-end">
+              <div className="flex items-center gap-2 rounded-2xl border border-emerald-400/15 bg-emerald-500/5 px-4 py-3 text-xs font-bold text-emerald-200">
+                <ShieldCheck className="h-4 w-4" />
+                حریم خصوصی پیش‌فرض: خصوصی
+              </div>
+              {enabled ? (
+                <>
+                  <Link
+                    href="/dashboard/community"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 text-xs font-black text-violet-100 transition hover:bg-violet-500/15"
+                  >
+                    <Users className="h-4 w-4" /> شبکه من
+                  </Link>
+                  <Link
+                    href="/community"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-xs font-black text-slate-200 transition hover:bg-white/[0.08]"
+                  >
+                    <Search className="h-4 w-4" /> کشف اعضا
+                  </Link>
+                </>
+              ) : null}
+              {publicProfileHref ? (
+                <Link
+                  href={publicProfileHref}
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-blue-400/20 bg-blue-500/10 px-4 text-xs font-black text-blue-200 transition hover:bg-blue-500/15"
+                >
+                  <Eye className="h-4 w-4" /> مشاهده پروفایل عمومی
+                </Link>
+              ) : null}
             </div>
           </div>
         </div>
