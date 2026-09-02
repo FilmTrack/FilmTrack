@@ -1,5 +1,6 @@
 export type ProductEvent =
   | "signup_started"
+  | "signup_confirmation_pending"
   | "signup_completed"
   | "search_submitted"
   | "title_viewed"

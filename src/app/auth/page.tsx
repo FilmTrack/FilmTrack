@@ -12,19 +12,53 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+type AuthErrorLike = {
+  code?: string;
+  message?: string;
+};
+
+function authErrorMessage(error: AuthErrorLike) {
+  switch (error.code) {
+    case "invalid_credentials":
+      return "ایمیل یا رمز عبور درست نیست. اگر تازه ثبت‌نام کرده‌اید، ابتدا ایمیل تأیید را بررسی کنید.";
+    case "email_not_confirmed":
+      return "ایمیل شما هنوز تأیید نشده است. ایمیل تأیید را باز کنید یا دوباره آن را ارسال کنید.";
+    case "over_email_send_rate_limit":
+      return "ارسال ایمیل موقتاً محدود شده است. چند دقیقه بعد دوباره تلاش کنید.";
+    case "email_address_invalid":
+      return "آدرس ایمیل معتبر نیست.";
+    default:
+      return "در انجام عملیات ورود یا ثبت‌نام مشکلی پیش آمد. دوباره تلاش کنید.";
+  }
+}
+
 export default function AuthPage() {
   const supabase = createClient();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [notice, setNotice] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const confirmationRedirect = () => `${window.location.origin}/auth?confirmed=1`;
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert(error.message);
-    else {
+    setNotice("");
+    setErrorMessage("");
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
+
+    if (error) {
+      setErrorMessage(authErrorMessage(error));
+    } else {
       router.push("/dashboard");
       router.refresh();
     }
@@ -34,33 +68,76 @@ export default function AuthPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setNotice("");
+    setErrorMessage("");
+
+    const normalizedEmail = email.trim().toLowerCase();
     void trackProductEvent("signup_started", { method: "email" });
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email: normalizedEmail,
+      password,
+      options: {
+        emailRedirectTo: confirmationRedirect(),
+      },
+    });
+
     if (error) {
-      alert(error.message);
+      setErrorMessage(authErrorMessage(error));
       setLoading(false);
       return;
     }
 
-    void trackProductEvent("signup_completed", { method: "email" });
-
     if (data.session) {
+      void trackProductEvent("signup_completed", { method: "email" });
       router.push("/onboarding");
       router.refresh();
     } else {
-      alert("ثبت‌نام انجام شد. پس از تأیید ایمیل، وارد حساب شوید تا راه‌اندازی اولیه را کامل کنید.");
-      router.push("/auth");
+      void trackProductEvent("signup_confirmation_pending", { method: "email" });
+      setPendingEmail(normalizedEmail);
+      setNotice(
+        "درخواست ثبت‌نام دریافت شد. برای تکمیل حساب، ایمیل تأیید را بررسی کنید. اگر پیام را نمی‌بینید پوشه Spam را هم بررسی کنید یا از دکمه ارسال دوباره استفاده کنید.",
+      );
+    }
+    setLoading(false);
+  };
+
+  const handleResendConfirmation = async () => {
+    const normalizedEmail = (pendingEmail || email).trim().toLowerCase();
+    if (!normalizedEmail) {
+      setErrorMessage("ابتدا ایمیل خود را وارد کنید.");
+      return;
+    }
+
+    setLoading(true);
+    setNotice("");
+    setErrorMessage("");
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: normalizedEmail,
+      options: {
+        emailRedirectTo: confirmationRedirect(),
+      },
+    });
+
+    if (error) {
+      setErrorMessage(authErrorMessage(error));
+    } else {
+      setPendingEmail(normalizedEmail);
+      setNotice("درخواست ارسال دوباره ثبت شد. لطفاً Inbox و Spam ایمیل خود را بررسی کنید.");
     }
     setLoading(false);
   };
 
   const handleOAuthLogin = async (provider: "google" | "github") => {
+    setErrorMessage("");
     void trackProductEvent("signup_started", { method: provider });
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/onboarding` },
     });
+    if (error) setErrorMessage(authErrorMessage(error));
   };
 
   const inputClass =
@@ -116,6 +193,17 @@ export default function AuthPage() {
             <div className="relative flex justify-center text-xs"><span className="bg-[#0b1220] px-3 text-slate-600">یا با ایمیل</span></div>
           </div>
 
+          {notice ? (
+            <div className="mb-4 rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-3 text-sm leading-7 text-emerald-100" role="status">
+              {notice}
+            </div>
+          ) : null}
+          {errorMessage ? (
+            <div className="mb-4 rounded-xl border border-rose-400/20 bg-rose-500/10 p-3 text-sm leading-7 text-rose-100" role="alert">
+              {errorMessage}
+            </div>
+          ) : null}
+
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 rounded-xl border border-white/10 bg-black/20 p-1">
               <TabsTrigger value="login" className="min-h-10 rounded-lg text-slate-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white">ورود</TabsTrigger>
@@ -135,6 +223,9 @@ export default function AuthPage() {
                 <Button type="submit" disabled={loading} className="min-h-12 w-full rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 text-base font-black text-white hover:opacity-95">
                   {loading ? "در حال ورود..." : "ورود به حساب"}
                 </Button>
+                <Button type="button" variant="ghost" disabled={loading} onClick={handleResendConfirmation} className="min-h-11 w-full rounded-xl text-sm font-bold text-blue-300 hover:bg-blue-500/10 hover:text-blue-200">
+                  ارسال دوباره ایمیل تأیید
+                </Button>
               </form>
             </TabsContent>
 
@@ -151,6 +242,11 @@ export default function AuthPage() {
                 <Button type="submit" disabled={loading} className="min-h-12 w-full rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 text-base font-black text-white hover:opacity-95">
                   {loading ? "در حال ساخت حساب..." : "ساخت حساب رایگان"}
                 </Button>
+                {pendingEmail ? (
+                  <Button type="button" variant="outline" disabled={loading} onClick={handleResendConfirmation} className="min-h-11 w-full rounded-xl border-white/10 bg-white/[0.03] text-sm font-bold text-blue-200 hover:bg-white/[0.06]">
+                    ارسال دوباره ایمیل تأیید
+                  </Button>
+                ) : null}
               </form>
             </TabsContent>
           </Tabs>
