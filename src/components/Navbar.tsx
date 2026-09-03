@@ -85,6 +85,12 @@ export default async function Navbar() {
                 <Calendar className="h-4 w-4" /> تقویم
               </Link>
 
+              {isLoggedIn ? (
+                <Link href="/dashboard/recommendations" className={`${desktopLinkClass} text-violet-300 hover:text-violet-200`}>
+                  <Sparkles className="h-4 w-4" /> چی ببینم؟
+                </Link>
+              ) : null}
+
               <Link href="/plus" className={`${desktopLinkClass} text-blue-300 hover:text-blue-200`}>
                 <Sparkles className="h-4 w-4" /> پلاس
               </Link>
@@ -129,6 +135,9 @@ export default async function Navbar() {
                 <Link href="/shows" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><Tv className="h-4 w-4 text-blue-300" /> سریال‌ها</Link>
                 <Link href="/genres" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><ListVideo className="h-4 w-4 text-blue-300" /> ژانرها</Link>
                 <Link href="/calendar" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><Calendar className="h-4 w-4 text-blue-300" /> تقویم پخش</Link>
+                {isLoggedIn ? (
+                  <Link href="/dashboard/recommendations" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-black text-violet-200 hover:bg-violet-500/10"><Sparkles className="h-4 w-4" /> چی ببینم؟</Link>
+                ) : null}
                 <Link href="/plus" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-black text-blue-300 hover:bg-blue-500/10"><Sparkles className="h-4 w-4" /> FilmTrack Plus</Link>
                 {isLoggedIn && (
                   <Link href="/dashboard" className="mt-1 flex min-h-12 items-center gap-3 border-t border-white/10 px-3 py-2 font-bold hover:bg-white/[0.06]"><UserRound className="h-4 w-4" /> پنل من</Link>
