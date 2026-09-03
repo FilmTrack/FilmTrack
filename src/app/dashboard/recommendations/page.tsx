@@ -11,6 +11,7 @@ import {
   identityKey,
   mergeRecommendationCandidates,
   rankRecommendationCandidates,
+  type RecommendationCandidate,
   type TitleType,
 } from "@/lib/m4/recommendations";
 import { createClient } from "@/lib/supabase/server";
@@ -96,7 +97,7 @@ export default async function RecommendationsPage() {
 
   const seedDetails = new Map<string, TmdbItem | null>();
   const candidateDetails = new Map<string, TmdbItem>();
-  const rankedGroups = [];
+  const rankedGroups: RecommendationCandidate[][] = [];
 
   if (apiKey && seeds.length > 0) {
     await Promise.all(
