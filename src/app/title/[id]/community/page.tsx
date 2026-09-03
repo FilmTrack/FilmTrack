@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import CommunityListAdder from "@/components/CommunityListAdder";
 import CommunityReviewComposer from "@/components/CommunityReviewComposer";
 import { isCommunityContentRuntimeEnabled } from "@/lib/m3/community-content-readiness";
 import { createClient } from "@/lib/supabase/server";
@@ -50,6 +51,7 @@ export default async function TitleCommunityPage({ params, searchParams }: { par
           <Link href={`/title/${id}?type=${titleType}`} className="rounded-xl border border-white/10 px-3 py-2 text-xs font-bold">صفحه عنوان</Link>
         </div>
         <CommunityReviewComposer titleId={titleId} titleType={titleType} />
+        <div className="mt-4"><CommunityListAdder titleId={titleId} titleType={titleType} /></div>
         <section className="mt-7 space-y-3">
           <h2 className="text-lg font-black">نقدهای عمومی</h2>
           {(reviews || []).length === 0 ? <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-sm text-slate-500">هنوز نقد عمومی برای این عنوان ثبت نشده است.</div> : (reviews || []).map((review) => (
