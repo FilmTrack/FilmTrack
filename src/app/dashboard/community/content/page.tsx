@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import CommunityListComposer from "@/components/CommunityListComposer";
 import { isCommunityContentRuntimeEnabled } from "@/lib/m3/community-content-readiness";
 import { createClient } from "@/lib/supabase/server";
 
@@ -38,6 +39,8 @@ export default async function CommunityContentDashboardPage() {
           <div><p className="text-xs font-black text-violet-300">فضای محتوای شخصی</p><h1 className="mt-2 text-3xl font-black">نقدها، فهرست‌ها و فعالیت من</h1></div>
           <Link href="/community/feed" className="rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 py-2 text-sm font-black text-violet-100">فید جامعه</Link>
         </div>
+
+        <div className="mt-7"><CommunityListComposer /></div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
