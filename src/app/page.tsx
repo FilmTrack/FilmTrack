@@ -101,7 +101,7 @@ function MediaRail({
         </Link>
       </div>
 
-      <div className="flex snap-x gap-3 overflow-x-auto pb-3 sm:gap-4" style={{ scrollbarWidth: "none" }}>
+      <div className="flex snap-x gap-3 overflow-x-auto pb-3 sm:gap-4 [-ms-overflow-style:none scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.slice(0, 16).map((item, index) => (
           <Link
             href={`/title/${item.id}?type=${type}`}
