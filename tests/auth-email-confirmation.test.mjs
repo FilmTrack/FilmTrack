@@ -32,3 +32,17 @@ test("email rate limits get an explicit Persian message", () => {
   assert.match(authPage, /case "over_email_send_rate_limit"/);
   assert.match(authPage, /ارسال ایمیل موقتاً محدود شده است/);
 });
+
+test("auth page provides a password recovery request flow", () => {
+  assert.match(authPage, /supabase\.auth\.resetPasswordForEmail\(normalizedEmail/);
+  assert.match(authPage, /redirectTo:\s*recoveryRedirect\(\)/);
+  assert.match(authPage, /\$\{window\.location\.origin\}\/auth\?recovery=1/);
+  assert.match(authPage, /رمز عبورم را فراموش کرده‌ام/);
+});
+
+test("recovery mode updates password and returns to dashboard", () => {
+  assert.match(authPage, /searchParams\.get\("recovery"\) === "1"/);
+  assert.match(authPage, /supabase\.auth\.updateUser\(\{ password: newPassword \}\)/);
+  assert.match(authPage, /router\.push\("\/dashboard"\)/);
+  assert.match(authPage, /ذخیره رمز جدید/);
+});
