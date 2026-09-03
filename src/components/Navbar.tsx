@@ -99,6 +99,7 @@ export default async function Navbar() {
                     <Sparkles className="h-4 w-4" /> برای من <ChevronDown className="h-3.5 w-3.5" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56 border-white/10 bg-[#0b1220]/98 text-white shadow-2xl backdrop-blur-xl">
+                    <Link href="/dashboard/calendar" className="block cursor-pointer"><DropdownMenuItem><Calendar className="ml-2 h-4 w-4" /> تقویم شخصی من</DropdownMenuItem></Link>
                     <Link href="/dashboard/recommendations" className="block cursor-pointer"><DropdownMenuItem><Sparkles className="ml-2 h-4 w-4" /> چی ببینم؟</DropdownMenuItem></Link>
                     <Link href="/dashboard/history" className="block cursor-pointer"><DropdownMenuItem><History className="ml-2 h-4 w-4" /> تاریخچه و امتیازها</DropdownMenuItem></Link>
                     <Link href="/dashboard/import" className="block cursor-pointer"><DropdownMenuItem><Upload className="ml-2 h-4 w-4" /> انتقال از سرویس‌های دیگر</DropdownMenuItem></Link>
@@ -155,6 +156,7 @@ export default async function Navbar() {
                 {isLoggedIn ? (
                   <>
                     <div className="my-1 border-t border-white/10" />
+                    <Link href="/dashboard/calendar" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-black text-blue-200 hover:bg-blue-500/10"><Calendar className="h-4 w-4" /> تقویم شخصی من</Link>
                     <Link href="/dashboard/recommendations" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-black text-violet-200 hover:bg-violet-500/10"><Sparkles className="h-4 w-4" /> چی ببینم؟</Link>
                     <Link href="/dashboard/history" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><History className="h-4 w-4 text-amber-300" /> تاریخچه و امتیازها</Link>
                     <Link href="/dashboard/import" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><Upload className="h-4 w-4 text-emerald-300" /> انتقال تاریخچه</Link>
