@@ -7,12 +7,15 @@ import Logo from "./Logo";
 import {
   Calendar,
   ChevronDown,
+  Compass,
   Film,
+  History,
   Home,
   ListVideo,
   Menu,
   Sparkles,
   Tv,
+  Upload,
   UserRound,
 } from "lucide-react";
 import {
@@ -81,14 +84,25 @@ export default async function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
+              <Link href="/discover" className={`${desktopLinkClass} text-violet-300 hover:text-violet-200`}>
+                <Compass className="h-4 w-4" /> کشف فارسی
+              </Link>
+
               <Link href="/calendar" className={desktopLinkClass}>
                 <Calendar className="h-4 w-4" /> تقویم
               </Link>
 
               {isLoggedIn ? (
-                <Link href="/dashboard/recommendations" className={`${desktopLinkClass} text-violet-300 hover:text-violet-200`}>
-                  <Sparkles className="h-4 w-4" /> چی ببینم؟
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className={`${desktopLinkClass} text-violet-300 hover:text-violet-200`}>
+                    <Sparkles className="h-4 w-4" /> برای من <ChevronDown className="h-3.5 w-3.5" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 border-white/10 bg-[#0b1220]/98 text-white shadow-2xl backdrop-blur-xl">
+                    <Link href="/dashboard/recommendations" className="block cursor-pointer"><DropdownMenuItem><Sparkles className="ml-2 h-4 w-4" /> چی ببینم؟</DropdownMenuItem></Link>
+                    <Link href="/dashboard/history" className="block cursor-pointer"><DropdownMenuItem><History className="ml-2 h-4 w-4" /> تاریخچه و امتیازها</DropdownMenuItem></Link>
+                    <Link href="/dashboard/import" className="block cursor-pointer"><DropdownMenuItem><Upload className="ml-2 h-4 w-4" /> انتقال از سرویس‌های دیگر</DropdownMenuItem></Link>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : null}
 
               <Link href="/plus" className={`${desktopLinkClass} text-blue-300 hover:text-blue-200`}>
@@ -129,14 +143,20 @@ export default async function Navbar() {
               >
                 <Menu className="h-5 w-5" />
               </summary>
-              <nav className="fixed inset-x-3 top-[72px] z-50 overflow-hidden rounded-2xl border border-white/10 bg-[#09111f]/98 p-2 text-sm text-slate-200 shadow-2xl backdrop-blur-xl sm:left-4 sm:right-auto sm:min-w-72">
+              <nav className="fixed inset-x-3 top-[72px] z-50 max-h-[calc(100vh-88px)] overflow-y-auto rounded-2xl border border-white/10 bg-[#09111f]/98 p-2 text-sm text-slate-200 shadow-2xl backdrop-blur-xl sm:left-4 sm:right-auto sm:min-w-72">
                 <Link href="/" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><Home className="h-4 w-4 text-blue-300" /> خانه</Link>
                 <Link href="/movies" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><Film className="h-4 w-4 text-blue-300" /> فیلم‌ها</Link>
                 <Link href="/shows" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><Tv className="h-4 w-4 text-blue-300" /> سریال‌ها</Link>
                 <Link href="/genres" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><ListVideo className="h-4 w-4 text-blue-300" /> ژانرها</Link>
+                <Link href="/discover" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-black text-violet-200 hover:bg-violet-500/10"><Compass className="h-4 w-4" /> کشف فارسی</Link>
                 <Link href="/calendar" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><Calendar className="h-4 w-4 text-blue-300" /> تقویم پخش</Link>
                 {isLoggedIn ? (
-                  <Link href="/dashboard/recommendations" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-black text-violet-200 hover:bg-violet-500/10"><Sparkles className="h-4 w-4" /> چی ببینم؟</Link>
+                  <>
+                    <div className="my-1 border-t border-white/10" />
+                    <Link href="/dashboard/recommendations" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-black text-violet-200 hover:bg-violet-500/10"><Sparkles className="h-4 w-4" /> چی ببینم؟</Link>
+                    <Link href="/dashboard/history" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><History className="h-4 w-4 text-amber-300" /> تاریخچه و امتیازها</Link>
+                    <Link href="/dashboard/import" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><Upload className="h-4 w-4 text-emerald-300" /> انتقال تاریخچه</Link>
+                  </>
                 ) : null}
                 <Link href="/plus" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-black text-blue-300 hover:bg-blue-500/10"><Sparkles className="h-4 w-4" /> FilmTrack Plus</Link>
                 {isLoggedIn && (
