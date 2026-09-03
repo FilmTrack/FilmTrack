@@ -7,6 +7,7 @@ const readiness = readFileSync("src/lib/account/readiness.ts", "utf8");
 const client = readFileSync("src/lib/account/account-privacy-client.ts", "utf8");
 const page = readFileSync("src/app/dashboard/account/page.tsx", "utf8");
 const actions = readFileSync("src/components/AccountPrivacyActions.tsx", "utf8");
+const navbar = readFileSync("src/components/Navbar.tsx", "utf8");
 
 test("self-delete RPC is owner-only and hardened", () => {
   assert.match(migration, /delete_my_filmtrack_account\(\)/);
@@ -37,10 +38,12 @@ test("export uses signed-in RLS client and exposes no service role", () => {
   assert.doesNotMatch(client, /service[_-]?role/i);
 });
 
-test("privacy center is authenticated, noindex and destructive action needs exact confirmation", () => {
+test("privacy center is authenticated, noindex, discoverable and destructive action needs exact confirmation", () => {
   assert.match(page, /redirect\("\/auth"\)/);
   assert.match(page, /robots: \{ index: false, follow: false \}/);
   assert.match(actions, /const DELETE_CONFIRMATION = "حذف حساب من"/);
   assert.match(actions, /confirmation !== DELETE_CONFIRMATION/);
   assert.match(actions, /deleteEnabled/);
+  assert.match(navbar, /href="\/dashboard\/account"/);
+  assert.match(navbar, /حساب و حریم خصوصی/);
 });
