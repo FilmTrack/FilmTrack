@@ -7,9 +7,9 @@ import ts from "typescript";
 async function loadModule() {
   const source = await readFile(new URL("../src/lib/m4/recommendation-v2.ts", import.meta.url), "utf8");
   const transpiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const module = { exports: {} };
-  vm.runInNewContext(transpiled, { module, exports: module.exports, require: () => ({}) });
-  return module.exports;
+  const loaded = { exports: {} };
+  vm.runInNewContext(transpiled, { module: loaded, exports: loaded.exports, require: () => ({}) });
+  return loaded.exports;
 }
 
 const dna = {
