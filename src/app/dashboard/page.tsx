@@ -24,8 +24,8 @@ const STATUS_META: Record<UserListStatus, { label: string; icon: typeof Eye }> =
   dropped: { label: "رها شده", icon: XCircle },
 };
 
-function isUserListStatus(value: string | undefined): value is UserListStatus {
-  return Boolean(value && USER_LIST_STATUSES.includes(value as UserListStatus));
+function isUserListStatus(value: unknown): value is UserListStatus {
+  return typeof value === "string" && USER_LIST_STATUSES.includes(value as UserListStatus);
 }
 
 export default async function DashboardPage({
@@ -206,7 +206,7 @@ export default async function DashboardPage({
           ) : (
             <div className="grid gap-3">
               {combinedList.map(({ db, tmdb }) => {
-                const status = isUserListStatus(db.status) ? db.status : "plan_to_watch";
+                const status: UserListStatus = isUserListStatus(db.status) ? db.status : "plan_to_watch";
                 const StatusIcon = STATUS_META[status].icon;
                 return (
                   <article key={db.id} className="rounded-2xl border border-white/10 bg-[#0b1220]/80 p-3 transition hover:border-blue-400/25 sm:p-4">
