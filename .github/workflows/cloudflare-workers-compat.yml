@@ -138,6 +138,8 @@ jobs:
             exit 1
           fi
 
+          export KV_NAMESPACE_ID="$namespace_id"
+
           node - <<'NODE'
           const fs = require('fs');
           const path = 'wrangler.jsonc';
@@ -149,8 +151,6 @@ jobs:
           }
           fs.writeFileSync(path, updated);
           NODE
-        env:
-          KV_NAMESPACE_ID: ${{ env.KV_NAMESPACE_ID }}
 
       - name: Build Worker preview bundle
         run: npx --no-install vinext build
