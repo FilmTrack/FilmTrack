@@ -100,9 +100,10 @@ jobs:
           NPM_CONFIG_LEGACY_PEER_DEPS: "true"
         run: >-
           npm install --no-save --package-lock=false
+          react@19.2.4 react-dom@19.2.4 react-server-dom-webpack@19.2.4
           vinext@latest vite@latest @vitejs/plugin-react@latest
-          @vitejs/plugin-rsc@latest react-server-dom-webpack@latest
-          @vinext/cloudflare@latest @cloudflare/vite-plugin@latest
+          @vitejs/plugin-rsc@latest @vinext/cloudflare@latest
+          @cloudflare/vite-plugin@latest
 
       - name: Initialize ephemeral vinext Cloudflare adapter
         env:
