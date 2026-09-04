@@ -96,6 +96,8 @@ jobs:
         run: npm ci
 
       - name: Initialize ephemeral vinext Cloudflare adapter
+        env:
+          NPM_CONFIG_LEGACY_PEER_DEPS: "true"
         run: npx --yes vinext@latest init --platform=cloudflare --skip-check
 
       - name: Build Worker preview bundle
