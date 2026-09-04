@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarDays, CheckCircle2, Eye, Film, Globe2, PlayCircle, Sparkles, UserRound, Users } from "lucide-react";
+import { CalendarDays, CheckCircle2, Eye, Film, Globe2, PauseCircle, PlayCircle, Sparkles, UserRound, Users, XCircle } from "lucide-react";
 
 import ListVisibilityToggle from "@/components/ListVisibilityToggle";
 import TmdbImage from "@/components/TmdbImage";
@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { isCommunityRuntimeEnabled } from "@/lib/m3/readiness";
 import { createClient } from "@/lib/supabase/server";
+import { USER_LIST_STATUSES, type UserListStatus } from "@/lib/user-lists/types";
 
 type CommunityDashboardProfile = {
   username: string;
@@ -15,7 +16,26 @@ type CommunityDashboardProfile = {
   visibility: "private" | "public";
 };
 
-export default async function DashboardPage() {
+const STATUS_META: Record<UserListStatus, { label: string; icon: typeof Eye }> = {
+  plan_to_watch: { label: "در صف تماشا", icon: Eye },
+  watching: { label: "در حال تماشا", icon: PlayCircle },
+  completed: { label: "تماشا شده", icon: CheckCircle2 },
+  on_hold: { label: "متوقف موقت", icon: PauseCircle },
+  dropped: { label: "رها شده", icon: XCircle },
+};
+
+function isUserListStatus(value: unknown): value is UserListStatus {
+  return typeof value === "string" && USER_LIST_STATUSES.includes(value as UserListStatus);
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status: requestedStatus } = await searchParams;
+  const activeStatus = isUserListStatus(requestedStatus) ? requestedStatus : null;
+
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub;
@@ -32,7 +52,6 @@ export default async function DashboardPage() {
   const communityEnabled = isCommunityRuntimeEnabled();
   let communityProfile: CommunityDashboardProfile | null = null;
 
-  // Keep the dashboard production-safe before M3 is explicitly activated.
   if (communityEnabled) {
     const { data } = await supabase
       .from("community_profiles")
@@ -59,11 +78,14 @@ export default async function DashboardPage() {
   };
 
   const watchList = userLists || [];
+  const filteredWatchList = activeStatus
+    ? watchList.filter((item) => item.status === activeStatus)
+    : watchList;
   const tmdbResults = await Promise.all(
-    watchList.map((item) => fetchTMDBDetails(item.title_id, item.title_type)),
+    filteredWatchList.map((item) => fetchTMDBDetails(item.title_id, item.title_type)),
   );
 
-  const combinedList = watchList
+  const combinedList = filteredWatchList
     .map((item, index) => ({ db: item, tmdb: tmdbResults[index] }))
     .filter((item) => item.tmdb !== null);
 
@@ -157,58 +179,55 @@ export default async function DashboardPage() {
             )
           ) : null}
 
-          <div className="mb-5 flex items-end justify-between gap-4">
+          <div className="mb-5 flex flex-col gap-4">
             <div>
               <h2 className="text-xl font-black sm:text-2xl">فهرست تماشای تو</h2>
-              <p className="mt-2 text-xs leading-6 text-slate-500">همه موارد به‌صورت پیش‌فرض خصوصی‌اند و فقط با انتخاب خودت عمومی می‌شوند.</p>
+              <p className="mt-2 text-xs leading-6 text-slate-500">هر پنج وضعیت استاندارد FilmTrack اینجا دقیق و قابل فیلتر هستند.</p>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1" aria-label="فیلتر وضعیت تماشا">
+              <Link href="/dashboard" className={`whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold transition ${activeStatus === null ? "border-blue-400/40 bg-blue-500/15 text-blue-100" : "border-white/10 bg-white/[0.03] text-slate-400 hover:text-white"}`}>همه ({watchList.length.toLocaleString("fa-IR")})</Link>
+              {USER_LIST_STATUSES.map((status) => (
+                <Link key={status} href={`/dashboard?status=${status}`} className={`whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold transition ${activeStatus === status ? "border-blue-400/40 bg-blue-500/15 text-blue-100" : "border-white/10 bg-white/[0.03] text-slate-400 hover:text-white"}`}>
+                  {STATUS_META[status].label} ({watchList.filter((item) => item.status === status).length.toLocaleString("fa-IR")})
+                </Link>
+              ))}
             </div>
           </div>
 
           {combinedList.length === 0 ? (
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center">
               <Film className="mx-auto h-7 w-7 text-blue-300" />
-              <p className="mt-3 font-bold">فهرستت هنوز خالی است</p>
-              <p className="mt-2 text-sm text-slate-500">چند فیلم یا سریال پیدا کن و اولین مسیر تماشایت را بساز.</p>
-              <Link href="/movies" className="mt-5 inline-flex">
-                <Button className="min-h-11 rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 px-5 font-bold text-white">شروع کاوش</Button>
+              <p className="mt-3 font-bold">{activeStatus ? `در وضعیت «${STATUS_META[activeStatus].label}» عنوانی نداری` : "فهرستت هنوز خالی است"}</p>
+              <p className="mt-2 text-sm text-slate-500">{activeStatus ? "یک وضعیت دیگر را انتخاب کن یا عنوانی را از صفحه فیلم/سریال به این وضعیت ببر." : "چند فیلم یا سریال پیدا کن و اولین مسیر تماشایت را بساز."}</p>
+              <Link href={activeStatus ? "/dashboard" : "/movies"} className="mt-5 inline-flex">
+                <Button className="min-h-11 rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 px-5 font-bold text-white">{activeStatus ? "نمایش همه عنوان‌ها" : "شروع کاوش"}</Button>
               </Link>
             </div>
           ) : (
             <div className="grid gap-3">
-              {combinedList.map(({ db, tmdb }) => (
-                <article key={db.id} className="rounded-2xl border border-white/10 bg-[#0b1220]/80 p-3 transition hover:border-blue-400/25 sm:p-4">
-                  <div className="flex gap-3 sm:gap-4">
-                    <Link href={`/title/${db.title_id}?type=${db.title_type}`} className="h-28 w-20 flex-none overflow-hidden rounded-xl bg-white/[0.04] sm:h-36 sm:w-24">
-                      {tmdb.poster_path && (
-                        <TmdbImage src={`https://image.tmdb.org/t/p/w500${tmdb.poster_path}`} alt={tmdb.title || tmdb.name} className="h-full w-full object-cover" />
-                      )}
-                    </Link>
-                    <div className="min-w-0 flex-1">
-                      <Link href={`/title/${db.title_id}?type=${db.title_type}`}>
-                        <h3 className="truncate text-base font-black sm:text-lg">{tmdb.title || tmdb.name}</h3>
+              {combinedList.map(({ db, tmdb }) => {
+                const status: UserListStatus = isUserListStatus(db.status) ? db.status : "plan_to_watch";
+                const StatusIcon = STATUS_META[status].icon;
+                return (
+                  <article key={db.id} className="rounded-2xl border border-white/10 bg-[#0b1220]/80 p-3 transition hover:border-blue-400/25 sm:p-4">
+                    <div className="flex gap-3 sm:gap-4">
+                      <Link href={`/title/${db.title_id}?type=${db.title_type}`} className="h-28 w-20 flex-none overflow-hidden rounded-xl bg-white/[0.04] sm:h-36 sm:w-24">
+                        {tmdb.poster_path && <TmdbImage src={`https://image.tmdb.org/t/p/w500${tmdb.poster_path}`} alt={tmdb.title || tmdb.name} className="h-full w-full object-cover" />}
                       </Link>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {db.title_type === "tv" ? "سریال" : "فیلم"} · {tmdb.release_date ? new Date(tmdb.release_date).getFullYear() : tmdb.first_air_date ? new Date(tmdb.first_air_date).getFullYear() : "—"}
-                      </p>
-                      <span className="mt-3 inline-flex items-center gap-1 rounded-full border border-blue-400/15 bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-300">
-                        {db.status === "watching" ? <PlayCircle className="h-3.5 w-3.5" /> : db.status === "completed" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                        {db.status === "watching" ? "در حال تماشا" : db.status === "completed" ? "تماشا شده" : "در صف تماشا"}
-                      </span>
-                      <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <ListVisibilityToggle id={db.id} initialPublic={db.is_public === true} />
-                        <Link href={`/title/${db.title_id}?type=${db.title_type}`}>
-                          <Button size="sm" variant="outline" className="rounded-xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.07]">مشاهده و ویرایش</Button>
-                        </Link>
-                        {db.title_type === "tv" && (
-                          <Link href={`/title/${db.title_id}/episodes`}>
-                            <Button size="sm" variant="outline" className="rounded-xl border-blue-400/20 bg-blue-500/10 text-blue-200 hover:bg-blue-500/15">رهگیری قسمت‌ها</Button>
-                          </Link>
-                        )}
+                      <div className="min-w-0 flex-1">
+                        <Link href={`/title/${db.title_id}?type=${db.title_type}`}><h3 className="truncate text-base font-black sm:text-lg">{tmdb.title || tmdb.name}</h3></Link>
+                        <p className="mt-1 text-xs text-slate-500">{db.title_type === "tv" ? "سریال" : "فیلم"} · {tmdb.release_date ? new Date(tmdb.release_date).getFullYear() : tmdb.first_air_date ? new Date(tmdb.first_air_date).getFullYear() : "—"}</p>
+                        <span className="mt-3 inline-flex items-center gap-1 rounded-full border border-blue-400/15 bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-300"><StatusIcon className="h-3.5 w-3.5" />{STATUS_META[status].label}</span>
+                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                          <ListVisibilityToggle id={db.id} initialPublic={db.is_public === true} />
+                          <Link href={`/title/${db.title_id}?type=${db.title_type}`}><Button size="sm" variant="outline" className="rounded-xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.07]">مشاهده و ویرایش</Button></Link>
+                          {db.title_type === "tv" && <Link href={`/title/${db.title_id}/episodes`}><Button size="sm" variant="outline" className="rounded-xl border-blue-400/20 bg-blue-500/10 text-blue-200 hover:bg-blue-500/15">رهگیری قسمت‌ها</Button></Link>}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
@@ -219,15 +238,8 @@ export default async function DashboardPage() {
             <div className="mt-4 grid gap-2">
               <Link href="/dashboard/continue"><Button className="min-h-11 w-full justify-start rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 text-white"><PlayCircle className="ml-2 h-4 w-4" /> ادامه تماشا</Button></Link>
               <Link href="/dashboard/profile"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-violet-400/20 bg-violet-500/10 text-violet-100 hover:bg-violet-500/15"><UserRound className="ml-2 h-4 w-4" /> پروفایل من</Button></Link>
-              {communityEnabled && communityProfile ? (
-                <>
-                  <Link href="/community"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-blue-400/20 bg-blue-500/10 text-blue-100 hover:bg-blue-500/15"><Users className="ml-2 h-4 w-4" /> کشف اعضا</Button></Link>
-                  <Link href="/dashboard/community"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Users className="ml-2 h-4 w-4" /> شبکه من</Button></Link>
-                </>
-              ) : null}
-              {communityProfile?.visibility === "public" ? (
-                <Link href={`/u/${encodeURIComponent(communityProfile.username)}`}><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Globe2 className="ml-2 h-4 w-4" /> پروفایل عمومی</Button></Link>
-              ) : null}
+              {communityEnabled && communityProfile ? <><Link href="/community"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-blue-400/20 bg-blue-500/10 text-blue-100 hover:bg-blue-500/15"><Users className="ml-2 h-4 w-4" /> کشف اعضا</Button></Link><Link href="/dashboard/community"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Users className="ml-2 h-4 w-4" /> شبکه من</Button></Link></> : null}
+              {communityProfile?.visibility === "public" ? <Link href={`/u/${encodeURIComponent(communityProfile.username)}`}><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Globe2 className="ml-2 h-4 w-4" /> پروفایل عمومی</Button></Link> : null}
               <Link href="/calendar"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><CalendarDays className="ml-2 h-4 w-4" /> تقویم انتشار</Button></Link>
               <Link href="/movies"><Button variant="outline" className="min-h-11 w-full justify-start rounded-xl border-white/10 bg-white/[0.03] text-white"><Film className="ml-2 h-4 w-4" /> کشف فیلم‌ها</Button></Link>
             </div>

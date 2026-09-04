@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ListChecks, PlayCircle } from "lucide-react";
+import { ChevronLeft, ListChecks, MessageSquareText, PlayCircle } from "lucide-react";
 
 import EpisodeProgressButton from "@/components/EpisodeProgressButton";
 import { createClient } from "@/lib/supabase/server";
@@ -145,6 +145,16 @@ export default async function EpisodeTrackingPage({ params, searchParams }: Page
                       episodeNumber={episode.episode_number}
                       initiallyWatched={isWatched}
                     />
+                    {userId ? (
+                      <Link
+                        href={`/title/${titleId}/episodes/${selectedSeason}/${episode.episode_number}/community`}
+                        className={isWatched
+                          ? "flex min-h-10 items-center justify-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/10 px-3 text-xs font-black text-violet-200 hover:bg-violet-500/15"
+                          : "flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-xs font-bold text-slate-500 hover:bg-white/[0.06]"}
+                      >
+                        <MessageSquareText className="h-4 w-4" /> {isWatched ? "امتیاز و گفت‌وگو" : "گفت‌وگو بعد از تماشا"}
+                      </Link>
+                    ) : null}
                     {!isWatched && episode.episode_number === episodes.find((item) => !watched.has(item.episode_number))?.episode_number ? (
                       <div className="flex items-center justify-center gap-2 rounded-xl border border-violet-400/15 bg-violet-500/10 px-3 py-2 text-xs font-black text-violet-300">
                         <PlayCircle className="h-4 w-4" /> قسمت بعدی تو
