@@ -42,14 +42,16 @@ test("familiar mode prefers strong Taste DNA affinity", async () => {
 test("context filters title type and rewards short episode runtime", async () => {
   const { rankContextualRecommendations } = await loadModule();
   const result = rankContextualRecommendations({ dna, candidates, context: { titleType: "tv", time: "short", discovery: "balanced" } });
-  assert.deepEqual(result.map((item) => item.titleId), [3]);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].titleId, 3);
   assert.ok(result[0].reasons.some((reason) => reason.includes("زمان")));
 });
 
 test("excluded titles never return", async () => {
   const { rankContextualRecommendations } = await loadModule();
   const result = rankContextualRecommendations({ dna, candidates, context: { titleType: "any", time: "any", discovery: "balanced" }, excludedKeys: new Set(["movie:1", "tv:3"]) });
-  assert.deepEqual(result.map((item) => item.titleId), [2]);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].titleId, 2);
 });
 
 test("explore mode gives a novelty path for off-pattern candidates", async () => {
