@@ -27,7 +27,7 @@ test("search page consumes the API array contract", () => {
   );
 });
 
-test("search API returns result arrays directly", () => {
+test("search API returns ranked canonical result arrays directly", () => {
   assert.match(
     searchRoute,
     /NextResponse\.json\(results/,
@@ -35,6 +35,16 @@ test("search API returns result arrays directly", () => {
 
   assert.match(
     searchRoute,
-    /\.filter\(isSupportedMedia\)\.slice\(0,\s*7\)/,
+    /new Map<string,\s*TmdbMediaSummary/,
+  );
+
+  assert.match(
+    searchRoute,
+    /canonicalResultKey\(item\)/,
+  );
+
+  assert.match(
+    searchRoute,
+    /rankSearchResults\(\[\.\.\.merged\.values\(\)\],\s*rawQuery\)\.slice\(0,\s*7\)/,
   );
 });

@@ -1,0 +1,110 @@
+name: Final RC Zero-Cost Authenticated QA
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "scripts/qa-local-supabase.mjs"
+      - "supabase/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/final-rc-authenticated-local-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authenticated-local-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Inject local-only legacy baseline
+        run: cp supabase/local/legacy_pre_m0_baseline.sql supabase/migrations/20260818000000_local_legacy_baseline.sql
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Rebuild database from repository migrations
+        run: supabase db reset
+
+      - name: Lint local database
+        run: supabase db lint --level error
+
+      - name: Run pgTAP database contracts
+        run: supabase test db
+
+      - name: Export local-only Supabase runtime variables
+        shell: bash
+        run: |
+          supabase status -o env > /tmp/supabase-status.env
+          API_URL=$(grep '^API_URL=' /tmp/supabase-status.env | cut -d= -f2- | tr -d '"')
+          ANON_KEY=$(grep '^ANON_KEY=' /tmp/supabase-status.env | cut -d= -f2- | tr -d '"')
+
+          if [[ ! "$API_URL" =~ ^http://(127\.0\.0\.1|localhost): ]]; then
+            echo "Safety abort: Supabase API is not local: $API_URL" >&2
+            exit 1
+          fi
+
+          if [[ -z "$ANON_KEY" ]]; then
+            echo "Safety abort: local anon key missing" >&2
+            exit 1
+          fi
+
+          echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
+
+      - name: Run authenticated Auth + RLS smoke
+        run: node scripts/qa-local-supabase.mjs
+
+      - name: Build FilmTrack against local-only Supabase
+        env:
+          NEXT_PUBLIC_FILMTRACK_M3_COMMUNITY_ENABLED: "true"
+          NEXT_PUBLIC_FILMTRACK_M3_COMMUNITY_CONTENT_ENABLED: "true"
+          NEXT_PUBLIC_FILMTRACK_M3_EPISODE_COMMUNITY_ENABLED: "true"
+          NEXT_PUBLIC_FILMTRACK_ACCOUNT_DELETE_ENABLED: "false"
+        run: npm run build
+
+      - name: Write non-secret QA evidence
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p qa-evidence
+          {
+            echo "FilmTrack Final RC authenticated local QA"
+            echo "backend=local-supabase"
+            echo "production_db_used=false"
+            echo "workflow_run=$GITHUB_RUN_ID"
+            echo "commit=$GITHUB_SHA"
+          } > qa-evidence/summary.txt
+
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: filmtrack-final-rc-authenticated-qa
+          path: qa-evidence/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup
