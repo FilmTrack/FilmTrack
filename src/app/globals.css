@@ -37,8 +37,8 @@
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -118,13 +118,51 @@
 }
 
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
     @apply font-sans;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  :where(main, header, footer, section, nav, article, aside, div, form) {
+    min-width: 0;
+  }
+
+  :where(img, video, canvas, svg) {
+    max-width: 100%;
+  }
+
+  :where(input, textarea, select, button) {
+    max-width: 100%;
+  }
+
+  :where(h1, h2, h3, h4, h5, h6, p, a, label, span) {
+    overflow-wrap: anywhere;
+  }
+
+  :where(button, a) {
+    min-width: 0;
+  }
+
+  @media (max-width: 639px) {
+    :where(h1, h2, h3) {
+      text-wrap: balance;
+    }
   }
 }
