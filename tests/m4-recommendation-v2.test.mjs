@@ -57,3 +57,12 @@ test("explore mode gives a novelty path for off-pattern candidates", async () =>
   const result = rankContextualRecommendations({ dna, candidates, context: { titleType: "movie", time: "any", discovery: "explore" } });
   assert.ok(result.some((item) => item.titleId === 2 && item.reasons.some((reason) => reason.includes("تازه"))));
 });
+
+test("diversity pass caps a dominant primary genre", async () => {
+  const { rankContextualRecommendations } = await loadModule();
+  const manyDrama = Array.from({ length: 8 }, (_, index) => ({ titleId: 100 + index, titleType: "movie", genres: ["Drama"], people: [], countries: ["US"], languages: ["EN"], year: 2024, runtimeMinutes: 100, popularity: 100 - index, voteAverage: 8 - index / 10 }));
+  const mixed = [{ titleId: 200, titleType: "movie", genres: ["Comedy"], people: [], countries: ["US"], languages: ["EN"], year: 2024, runtimeMinutes: 100, popularity: 30, voteAverage: 7.5 }];
+  const result = rankContextualRecommendations({ dna, candidates: [...manyDrama, ...mixed], context: { titleType: "movie", time: "any", discovery: "balanced" }, limit: 4 });
+  assert.ok(result.filter((item) => item.genres[0] === "Drama").length <= 2);
+  assert.ok(result.some((item) => item.genres[0] === "Comedy"));
+});
