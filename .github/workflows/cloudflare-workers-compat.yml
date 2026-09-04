@@ -1,4 +1,4 @@
-name: Cloudflare Workers Compatibility Gate
+name: Cloudflare Workers Preview Gate
 
 on:
   pull_request:
@@ -35,7 +35,6 @@ jobs:
         run: npm run build
 
       - name: Run non-destructive vinext compatibility check
-        id: vinext
         shell: bash
         run: |
           set -o pipefail
@@ -47,5 +46,72 @@ jobs:
         with:
           name: vinext-compatibility-${{ github.sha }}
           path: vinext-check.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+  workers-preview:
+    name: deploy preview-only Worker
+    needs: vinext-compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_API_READ_ACCESS_TOKEN: ${{ secrets.TMDB_API_READ_ACCESS_TOKEN }}
+      NEXT_PUBLIC_FILMTRACK_M2_RATING_DIARY_ENABLED: "false"
+      NEXT_PUBLIC_FILMTRACK_M3_COMMUNITY_ENABLED: "false"
+      NEXT_PUBLIC_FILMTRACK_M3_CONTENT_ENABLED: "false"
+      NEXT_PUBLIC_FILMTRACK_M3_EPISODE_COMMUNITY_ENABLED: "false"
+      NEXT_PUBLIC_FILMTRACK_ACCOUNT_DELETE_ENABLED: "false"
+
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify deployment credentials without exposing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
+            if [ -z "${!name:-}" ]; then
+              echo "Missing required GitHub secret: $name"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 78
+          fi
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Initialize ephemeral vinext Cloudflare adapter
+        run: npx --yes vinext@latest init --platform=cloudflare --skip-check
+
+      - name: Build Worker preview bundle
+        run: npm run build:vinext
+
+      - name: Deploy isolated workers.dev preview
+        shell: bash
+        run: |
+          set -o pipefail
+          npx --yes @vinext/cloudflare@latest deploy --name filmtrack-v1-preview --preview 2>&1 | tee cloudflare-preview-deploy.txt
+
+      - name: Upload deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-preview-deploy-${{ github.sha }}
+          path: cloudflare-preview-deploy.txt
           if-no-files-found: warn
           retention-days: 14
