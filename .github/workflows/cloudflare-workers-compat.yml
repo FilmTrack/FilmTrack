@@ -95,19 +95,28 @@ jobs:
       - name: Install project dependencies
         run: npm ci
 
+      - name: Install ephemeral vinext Cloudflare toolchain
+        env:
+          NPM_CONFIG_LEGACY_PEER_DEPS: "true"
+        run: >-
+          npm install --no-save --package-lock=false
+          vinext@latest vite@latest @vitejs/plugin-react@latest
+          @vitejs/plugin-rsc@latest react-server-dom-webpack@latest
+          @vinext/cloudflare@latest @cloudflare/vite-plugin@latest
+
       - name: Initialize ephemeral vinext Cloudflare adapter
         env:
           NPM_CONFIG_LEGACY_PEER_DEPS: "true"
-        run: npx --yes vinext@latest init --platform=cloudflare --skip-check
+        run: npx --no-install vinext init --platform=cloudflare --skip-check
 
       - name: Build Worker preview bundle
-        run: npm run build:vinext
+        run: npx --no-install vinext build
 
       - name: Deploy isolated workers.dev preview
         shell: bash
         run: |
           set -o pipefail
-          npx --yes @vinext/cloudflare@latest deploy --name filmtrack-v1-preview --preview 2>&1 | tee cloudflare-preview-deploy.txt
+          npx --no-install @vinext/cloudflare deploy --name filmtrack-v1-preview --preview 2>&1 | tee cloudflare-preview-deploy.txt
 
       - name: Upload deployment evidence
         if: always()
