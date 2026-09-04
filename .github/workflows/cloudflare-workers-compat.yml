@@ -1,0 +1,51 @@
+name: Cloudflare Workers Compatibility Gate
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/cloudflare-workers-compat.yml"
+      - "next.config.ts"
+      - "package.json"
+      - "src/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vinext-compatibility:
+    name: vinext compatibility check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify frozen Next.js build first
+        run: npm run build
+
+      - name: Run non-destructive vinext compatibility check
+        id: vinext
+        shell: bash
+        run: |
+          set -o pipefail
+          npx --yes vinext@latest check 2>&1 | tee vinext-check.txt
+
+      - name: Upload compatibility evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vinext-compatibility-${{ github.sha }}
+          path: vinext-check.txt
+          if-no-files-found: warn
+          retention-days: 14
