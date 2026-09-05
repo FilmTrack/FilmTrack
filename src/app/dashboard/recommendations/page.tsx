@@ -23,7 +23,7 @@ type TmdbItem = {
   credits?: { cast?: Array<{ name: string }>; crew?: Array<{ name: string; job?: string }> };
 };
 
-function displayTitle(item: TmdbItem | null, fallback: number) { return item?.title || item?.name || `عنوان #${fallback}`; }
+function displayTitle(item: TmdbItem | null, fallback: number) { return item?.title || item?.name || `عنوان ${fallback.toLocaleString("fa-IR")}`; }
 async function fetchTmdb(path: string, apiKey: string): Promise<unknown | null> {
   try {
     const response = await fetch(`https://api.themoviedb.org/3${path}${path.includes("?") ? "&" : "?"}api_key=${apiKey}&language=fa-IR`, { next: { revalidate: 3600 } });
@@ -118,33 +118,33 @@ export default async function RecommendationsPage({ searchParams }: { searchPara
       <section className="border-b border-white/5 bg-[radial-gradient(circle_at_75%_0%,rgba(124,58,237,.15),transparent_30%),radial-gradient(circle_at_18%_5%,rgba(37,99,235,.12),transparent_28%)]">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <Link href="/dashboard" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-slate-400 hover:text-white"><ChevronRight className="h-4 w-4" /> بازگشت به داشبورد</Link>
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1.5 text-xs font-bold text-violet-200"><Sparkles className="h-4 w-4" /> Recommendation v2</div>
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1.5 text-xs font-bold text-violet-200"><Sparkles className="h-4 w-4" /> پیشنهادهای شخصی</div>
           <h1 className="mt-4 text-3xl font-black sm:text-4xl">چی ببینم؟</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">Taste DNA تو + شرایط همین لحظه. هر نتیجه باید بتواند توضیح دهد چرا برای تو انتخاب شده است.</p>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">هویت سینمایی تو همراه با شرایط همین لحظه بررسی می‌شود؛ هر نتیجه باید بتواند توضیح دهد چرا برای تو انتخاب شده است.</p>
         </div>
       </section>
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <form className="mb-8 grid gap-3 rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:grid-cols-4" method="get">
-          <div className="sm:col-span-4 flex items-center gap-2 font-black"><SlidersHorizontal className="h-4 w-4 text-violet-300" /> شرایط تماشای الان</div>
+          <div className="flex items-center gap-2 font-black sm:col-span-4"><SlidersHorizontal className="h-4 w-4 text-violet-300" /> شرایط تماشای الان</div>
           <select name="type" defaultValue={context.titleType} className="min-h-11 rounded-xl border border-white/10 bg-[#0b1220] px-3 text-sm"><option value="any">فیلم یا سریال</option><option value="movie">فقط فیلم</option><option value="tv">فقط سریال</option></select>
           <select name="time" defaultValue={context.time} className="min-h-11 rounded-xl border border-white/10 bg-[#0b1220] px-3 text-sm"><option value="any">هر مدت</option><option value="short">وقت کم</option><option value="standard">زمان معمولی</option><option value="long">وقت آزاد زیاد</option></select>
           <select name="discovery" defaultValue={context.discovery} className="min-h-11 rounded-xl border border-white/10 bg-[#0b1220] px-3 text-sm"><option value="balanced">متعادل</option><option value="familiar">نزدیک به سلیقه‌ام</option><option value="explore">چیز تازه کشف کن</option></select>
           <Button type="submit" className="min-h-11 rounded-xl">پیشنهاد بده</Button>
         </form>
 
-        {dna.sampleSize < 3 ? <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-5 text-sm leading-7 text-amber-100">برای Recommendation v2 دقیق‌تر، چند عنوان دیگر ثبت یا امتیازدهی کن. فعلاً موتور از بهترین سیگنال‌های موجود استفاده می‌کند.</div> : null}
+        {dna.sampleSize < 3 ? <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-5 text-sm leading-7 text-amber-100">برای پیشنهادهای دقیق‌تر، چند عنوان دیگر ثبت یا امتیازدهی کن. فعلاً موتور از بهترین نشانه‌های موجود استفاده می‌کند.</div> : null}
 
         {recommendations.length === 0 ? (
           <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center"><Film className="mx-auto h-8 w-8 text-blue-300" /><h2 className="mt-4 text-xl font-black">هنوز پیشنهاد کافی نداریم</h2><p className="mt-2 text-sm text-slate-500">چند عنوان را ثبت کن یا فیلترها را بازتر انتخاب کن.</p></section>
         ) : (
           <section>
-            <div className="mb-5"><h2 className="text-2xl font-black">پیشنهادهای همین لحظه برای تو</h2><p className="mt-2 text-xs leading-6 text-slate-500">رتبه‌بندی از Taste DNA، کیفیت، زمان انتخابی و میزان آشنایی/اکتشاف ساخته شده است.</p></div>
+            <div className="mb-5"><h2 className="text-2xl font-black">پیشنهادهای همین لحظه برای تو</h2><p className="mt-2 text-xs leading-6 text-slate-500">رتبه‌بندی از هویت سینمایی تو، کیفیت، زمان انتخابی و میزان آشنایی یا اکتشاف ساخته شده است.</p></div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               {recommendations.map((recommendation) => {
                 const key = identityKey(recommendation.titleId, recommendation.titleType); const item = details.get(key) || candidateBasics.get(key) || null;
                 return <Link key={key} href={`/title/${recommendation.titleId}?type=${recommendation.titleType}`} className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220]/80 transition hover:border-violet-400/30">
                   <div className="aspect-[2/3] bg-white/[0.04]">{item?.poster_path ? <TmdbImage src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} alt={`پوستر ${displayTitle(item, recommendation.titleId)}`} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" /> : null}</div>
-                  <div className="p-3"><h3 className="line-clamp-2 text-sm font-black">{displayTitle(item, recommendation.titleId)}</h3><p className="mt-2 line-clamp-3 text-[11px] leading-5 text-violet-200">{recommendation.reasons.slice(0, 2).join(" · ")}</p>{typeof item?.vote_average === "number" ? <p className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-500"><Star className="h-3 w-3" /> TMDB {item.vote_average.toFixed(1)}</p> : null}</div>
+                  <div className="p-3"><h3 className="line-clamp-2 text-sm font-black">{displayTitle(item, recommendation.titleId)}</h3><p className="mt-2 line-clamp-3 text-[11px] leading-5 text-violet-200">{recommendation.reasons.slice(0, 2).join(" · ")}</p>{typeof item?.vote_average === "number" ? <p className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-500"><Star className="h-3 w-3" /> امتیاز مرجع {item.vote_average.toLocaleString("fa-IR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</p> : null}</div>
                 </Link>;
               })}
             </div>
