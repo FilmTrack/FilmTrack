@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, Sparkles } from "lucide-react";
+import { Film, ListVideo, Search, Sparkles, Tv } from "lucide-react";
 
 import TmdbImage from "@/components/TmdbImage";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Sea
   const { q = "" } = await searchParams;
   const query = q.trim();
   const intent = query ? parsePersianDiscoveryIntent(query) : null;
+  const hasLiveCatalog = Boolean(process.env.TMDB_API_KEY);
   const results = intent ? await fetchDiscovery(buildTmdbDiscoverPath(intent)) : [];
 
   return (
@@ -53,7 +54,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Sea
       <section className="border-b border-white/5 bg-[radial-gradient(circle_at_80%_0%,rgba(124,58,237,.16),transparent_30%),radial-gradient(circle_at_20%_0%,rgba(37,99,235,.12),transparent_28%)]">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1.5 text-xs font-black text-violet-200">
-            <Sparkles className="h-4 w-4" /> Persian Discovery v1
+            <Sparkles className="h-4 w-4" /> کشف فارسی FilmTrack
           </div>
           <h1 className="mt-4 text-3xl font-black sm:text-5xl">چی ببینم؟</h1>
           <p className="mt-4 max-w-3xl text-sm leading-8 text-slate-400 sm:text-base">
@@ -103,7 +104,22 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Sea
             </div>
 
             {results.length === 0 ? (
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center text-sm text-slate-400">برای این ترکیب نتیجه کافی پیدا نشد. یکی از فیلترها را ساده‌تر کن.</div>
+              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-7 text-center sm:p-9">
+                <Sparkles className="mx-auto h-7 w-7 text-violet-300" />
+                <p className="mt-4 text-base font-black text-white">
+                  {hasLiveCatalog ? "برای این ترکیب نتیجه کافی پیدا نشد" : "داده‌های زنده‌ی کاتالوگ در این Preview فعال نیست"}
+                </p>
+                <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-slate-500">
+                  {hasLiveCatalog
+                    ? "یکی از محدودیت‌ها را ساده‌تر کن یا با یک جمله کوتاه‌تر دوباره امتحان کن."
+                    : "موتور فهم درخواست فارسی فعال است، اما این محیط Preview عمداً بدون کلید TMDB اجرا می‌شود تا هیچ Secret تولیدی در محیط تست قرار نگیرد."}
+                </p>
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  <Link href="/movies" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-bold text-slate-200 hover:bg-white/[0.08]"><Film className="h-4 w-4 text-blue-300" /> فیلم‌ها</Link>
+                  <Link href="/shows" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-bold text-slate-200 hover:bg-white/[0.08]"><Tv className="h-4 w-4 text-violet-300" /> سریال‌ها</Link>
+                  <Link href="/genres" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-bold text-slate-200 hover:bg-white/[0.08]"><ListVideo className="h-4 w-4 text-emerald-300" /> ژانرها</Link>
+                </div>
+              </div>
             ) : (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 {results.map((item) => {
