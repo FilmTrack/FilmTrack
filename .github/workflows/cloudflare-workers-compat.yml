@@ -51,6 +51,7 @@ jobs:
 
   workers-preview:
     name: deploy preview-only Worker
+    if: github.event_name == 'workflow_dispatch'
     needs: vinext-compatibility
     runs-on: ubuntu-latest
     timeout-minutes: 25
