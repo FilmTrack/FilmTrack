@@ -30,10 +30,22 @@ import {
 const desktopLinkClass =
   "inline-flex min-h-10 items-center gap-1.5 rounded-xl px-2.5 text-sm font-bold text-slate-400 transition hover:bg-white/[0.04] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60";
 
+async function getIsLoggedIn(): Promise<boolean> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return false;
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data: claimsData } = await supabase.auth.getClaims();
+    return Boolean(claimsData?.claims?.sub);
+  } catch {
+    return false;
+  }
+}
+
 export default async function Navbar() {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const isLoggedIn = Boolean(claimsData?.claims?.sub);
+  const isLoggedIn = await getIsLoggedIn();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#050914]/90 shadow-[0_12px_40px_rgba(0,0,0,.18)] backdrop-blur-xl">
