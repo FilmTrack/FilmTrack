@@ -1,0 +1,77 @@
+name: Cloudflare Preview HTTP Smoke
+
+on:
+  pull_request:
+    branches:
+      - release/115-final-rc
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      BASE_URL: https://filmtrack-v1-preview.amotef.workers.dev
+    steps:
+      - name: Verify public preview routes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          routes=(
+            "/"
+            "/about"
+            "/movies"
+            "/shows"
+            "/genres"
+            "/discover"
+            "/calendar"
+            "/plus"
+            "/privacy"
+            "/terms"
+          )
+
+          failures=0
+
+          for route in "${routes[@]}"; do
+            url="${BASE_URL}${route}"
+            body="$(mktemp)"
+            headers="$(mktemp)"
+
+            status="$(curl \
+              --silent \
+              --show-error \
+              --location \
+              --connect-timeout 15 \
+              --max-time 30 \
+              --dump-header "$headers" \
+              --output "$body" \
+              --write-out '%{http_code}' \
+              "$url" || true)"
+
+            echo "${route} -> HTTP ${status}"
+
+            if [[ ! "$status" =~ ^(200|301|302|307|308)$ ]]; then
+              echo "::error::${route} returned HTTP ${status}"
+              failures=$((failures + 1))
+            fi
+
+            if [[ "$route" == "/" ]]; then
+              if ! grep -qi "FilmTrack" "$body"; then
+                echo "::error::Homepage response does not contain FilmTrack marker"
+                failures=$((failures + 1))
+              fi
+            fi
+
+            rm -f "$body" "$headers"
+          done
+
+          if [[ "$failures" -ne 0 ]]; then
+            echo "Smoke test failed with ${failures} failure(s)."
+            exit 1
+          fi
+
+          echo "All public Preview routes passed."
