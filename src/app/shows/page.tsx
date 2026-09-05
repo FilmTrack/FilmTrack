@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles, Star, Tv } from "lucide-react";
+import { Compass, ListVideo, Sparkles, Star, Tv } from "lucide-react";
 
 import TmdbImage from "@/components/TmdbImage";
 import { demoShows, isLocalVisualQa } from "@/lib/demo-catalog";
@@ -26,6 +26,7 @@ export default async function ShowsPage() {
   const liveShows = await fetchShows();
   const shows = liveShows.length ? liveShows : isLocalVisualQa ? demoShows : [];
   const isDemo = liveShows.length === 0 && isLocalVisualQa;
+  const hasLiveCatalog = Boolean(process.env.TMDB_API_KEY);
 
   return (
     <main className="min-h-screen bg-[#050914] text-white" dir="rtl">
@@ -48,10 +49,24 @@ export default async function ShowsPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         {shows.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center">
-            <Sparkles className="mx-auto h-6 w-6 text-blue-300" />
-            <p className="mt-3 font-bold text-white">فهرست سریال‌ها فعلاً در دسترس نیست</p>
-            <p className="mt-2 text-sm text-slate-500">کمی بعد دوباره تلاش کن یا از جست‌وجوی بالای صفحه استفاده کن.</p>
+          <div className="rounded-3xl border border-white/10 bg-[linear-gradient(135deg,rgba(124,58,237,.08),rgba(37,99,235,.05),rgba(255,255,255,.02))] p-7 text-center sm:p-10">
+            <Sparkles className="mx-auto h-7 w-7 text-violet-300" />
+            <p className="mt-4 text-lg font-black text-white">
+              {hasLiveCatalog ? "فعلاً سریالی برای نمایش پیدا نشد" : "کاتالوگ زنده سریال‌ها در Preview غیرفعال است"}
+            </p>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-400">
+              {hasLiveCatalog
+                ? "می‌توانی از کشف فارسی یا ژانرها مسیر دیگری برای پیدا کردن عنوان مناسب شروع کنی."
+                : "برای حفظ امنیت، کلید TMDB تولید به محیط Preview داده نشده است. رابط کاربری و مسیرهای FilmTrack همچنان قابل بررسی هستند."}
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link href="/discover" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 px-4 text-sm font-black text-white transition hover:opacity-95">
+                <Compass className="h-4 w-4" /> کشف فارسی
+              </Link>
+              <Link href="/genres" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-bold text-slate-200 transition hover:bg-white/[0.08]">
+                <ListVideo className="h-4 w-4" /> مرور ژانرها
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
@@ -77,7 +92,7 @@ export default async function ShowsPage() {
                     )}
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/55 to-transparent" />
                     {typeof show.vote_average === "number" && show.vote_average > 0 && (
-                      <span className="absolute left-2 bottom-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[11px] font-black text-amber-300 backdrop-blur">
+                      <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[11px] font-black text-amber-300 backdrop-blur">
                         <Star className="h-3 w-3 fill-current" /> {show.vote_average.toFixed(1)}
                       </span>
                     )}
