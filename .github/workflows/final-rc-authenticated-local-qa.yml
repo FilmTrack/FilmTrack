@@ -90,6 +90,7 @@ jobs:
           base="https://filmtrack-v1-preview.amotef.workers.dev"
           routes=(
             "/"
+            "/auth"
             "/movies"
             "/shows"
             "/genres"
