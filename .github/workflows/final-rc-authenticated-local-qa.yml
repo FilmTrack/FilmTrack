@@ -83,6 +83,43 @@ jobs:
           NEXT_PUBLIC_FILMTRACK_ACCOUNT_DELETE_ENABLED: "false"
         run: npm run build
 
+      - name: Smoke public Cloudflare Preview routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://filmtrack-v1-preview.amotef.workers.dev"
+          routes=(
+            "/"
+            "/movies"
+            "/shows"
+            "/genres"
+            "/discover"
+            "/calendar"
+            "/plus"
+            "/privacy"
+            "/terms"
+          )
+
+          mkdir -p qa-evidence
+          : > qa-evidence/public-preview-smoke.txt
+
+          failed=0
+          for route in "${routes[@]}"; do
+            url="${base}${route}"
+            code=$(curl --silent --show-error --location --connect-timeout 15 --max-time 40 --output /tmp/filmtrack-smoke-body --write-out '%{http_code}' "$url" || true)
+            echo "$route $code" | tee -a qa-evidence/public-preview-smoke.txt
+
+            if [[ ! "$code" =~ ^(200|204|301|302|303|307|308)$ ]]; then
+              echo "FAIL $url -> HTTP $code" >&2
+              failed=1
+            fi
+          done
+
+          if [[ "$failed" -ne 0 ]]; then
+            echo "One or more public Preview routes failed." >&2
+            exit 1
+          fi
+
       - name: Write non-secret QA evidence
         if: always()
         shell: bash
@@ -92,6 +129,7 @@ jobs:
             echo "FilmTrack Final RC authenticated local QA"
             echo "backend=local-supabase"
             echo "production_db_used=false"
+            echo "preview_smoke_target=https://filmtrack-v1-preview.amotef.workers.dev"
             echo "workflow_run=$GITHUB_RUN_ID"
             echo "commit=$GITHUB_SHA"
           } > qa-evidence/summary.txt
