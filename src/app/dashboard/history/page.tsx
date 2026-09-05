@@ -39,7 +39,7 @@ function titleKey(titleId: number, titleType: TitleType) {
 }
 
 function titleName(item: TmdbTitle | null, fallbackId: number) {
-  return item?.title || item?.name || `عنوان #${fallbackId}`;
+  return item?.title || item?.name || `عنوان شماره ${fallbackId.toLocaleString("fa-IR")}`;
 }
 
 function formatPersianDate(value: string) {
@@ -72,9 +72,9 @@ export default async function PersonalHistoryPage() {
           </Link>
           <section className="mt-6 rounded-3xl border border-blue-400/15 bg-[linear-gradient(135deg,rgba(37,99,235,.10),rgba(124,58,237,.08))] p-6 sm:p-8">
             <Sparkles className="h-7 w-7 text-blue-300" />
-            <h1 className="mt-4 text-2xl font-black sm:text-3xl">تاریخچه شخصی FilmTrack</h1>
+            <h1 className="mt-4 text-2xl font-black sm:text-3xl">تاریخچه شخصی فیلم‌ترک</h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-              زیرساخت امتیاز، دفترچه تماشا و Rewatch آماده است، اما فعال‌سازی نهایی این قابلیت هنوز انجام نشده است.
+              زیرساخت امتیاز، دفترچه تماشا و بازتماشا آماده است، اما فعال‌سازی نهایی این قابلیت هنوز انجام نشده است.
             </p>
           </section>
         </div>
@@ -150,7 +150,7 @@ export default async function PersonalHistoryPage() {
               </div>
               <h1 className="mt-4 text-3xl font-black sm:text-4xl">امتیازها و دفترچه تماشای من</h1>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-                امتیازهای FilmTrack، تاریخ‌های تماشا و Rewatchهای تو در این صفحه خصوصی می‌مانند.
+                امتیازهای فیلم‌ترک، تاریخ‌های تماشا و بازتماشاهای تو در این صفحه خصوصی می‌مانند.
               </p>
             </div>
           </div>
@@ -158,18 +158,18 @@ export default async function PersonalHistoryPage() {
           <div className="mt-7 grid grid-cols-3 gap-3">
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
               <Star className="h-4 w-4 text-amber-300" />
-              <p className="mt-3 text-2xl font-black">{ratings.length}</p>
+              <p className="mt-3 text-2xl font-black">{ratings.length.toLocaleString("fa-IR")}</p>
               <p className="mt-1 text-xs text-slate-500">امتیاز شخصی</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
               <CalendarDays className="h-4 w-4 text-blue-300" />
-              <p className="mt-3 text-2xl font-black">{diary.length}</p>
+              <p className="mt-3 text-2xl font-black">{diary.length.toLocaleString("fa-IR")}</p>
               <p className="mt-1 text-xs text-slate-500">ثبت تماشا</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
               <RotateCcw className="h-4 w-4 text-violet-300" />
-              <p className="mt-3 text-2xl font-black">{rewatchCount}</p>
-              <p className="mt-1 text-xs text-slate-500">Rewatch</p>
+              <p className="mt-3 text-2xl font-black">{rewatchCount.toLocaleString("fa-IR")}</p>
+              <p className="mt-1 text-xs text-slate-500">بازتماشا</p>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@ export default async function PersonalHistoryPage() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-black">امتیازهای من</h2>
-              <p className="mt-1 text-xs text-slate-500">امتیاز شخصی FilmTrack؛ مستقل از امتیاز تجمیعی TMDB.</p>
+              <p className="mt-1 text-xs text-slate-500">امتیاز شخصی فیلم‌ترک؛ مستقل از امتیاز تجمیعی مرجع.</p>
             </div>
             <Star className="h-5 w-5 text-amber-300" />
           </div>
@@ -209,7 +209,7 @@ export default async function PersonalHistoryPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-black">{titleName(details, row.title_id)}</p>
                       <p className="mt-1 text-xs text-slate-500">{row.title_type === "tv" ? "سریال" : "فیلم"}</p>
-                      <p className="mt-3 inline-flex items-center gap-1 text-sm font-black text-amber-300"><Star className="h-4 w-4 fill-current" /> {row.rating_10}/10</p>
+                      <p className="mt-3 inline-flex items-center gap-1 text-sm font-black text-amber-300"><Star className="h-4 w-4 fill-current" /> {row.rating_10.toLocaleString("fa-IR")} از ۱۰</p>
                     </div>
                   </Link>
                 );
@@ -222,7 +222,7 @@ export default async function PersonalHistoryPage() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-black">دفترچه تماشا</h2>
-              <p className="mt-1 text-xs text-slate-500">هر ثبت جداست؛ تکرار یک عنوان به‌صورت Rewatch محاسبه می‌شود.</p>
+              <p className="mt-1 text-xs text-slate-500">هر ثبت جداست؛ تکرار یک عنوان به‌صورت بازتماشا محاسبه می‌شود.</p>
             </div>
             <CalendarDays className="h-5 w-5 text-blue-300" />
           </div>
@@ -248,7 +248,7 @@ export default async function PersonalHistoryPage() {
                       <p className="truncate font-black">{titleName(details, row.title_id)}</p>
                       <p className="mt-1 text-xs text-slate-500">{formatPersianDate(row.watched_on)}</p>
                       {totalWatches > 1 ? (
-                        <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-violet-400/20 bg-violet-500/10 px-2 py-1 text-[11px] font-bold text-violet-200"><RotateCcw className="h-3 w-3" /> {totalWatches} بار تماشا</span>
+                        <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-violet-400/20 bg-violet-500/10 px-2 py-1 text-[11px] font-bold text-violet-200"><RotateCcw className="h-3 w-3" /> {totalWatches.toLocaleString("fa-IR")} بار تماشا</span>
                       ) : null}
                     </div>
                   </Link>
