@@ -8,7 +8,7 @@ import { computeTasteDNA, type TasteMetadata, type TasteSignal, type TitleType }
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "DNA سینمایی من | FilmTrack",
+  title: "هویت سینمایی من | FilmTrack",
   robots: { index: false, follow: false },
 };
 
@@ -44,8 +44,8 @@ function MetricList({ title, icon, items }: { title: string; icon: React.ReactNo
       <div className="mt-4 grid gap-3">
         {items.length ? items.map((item, index) => (
           <div key={item.label} className="flex items-center justify-between gap-4">
-            <div className="min-w-0"><span className="ml-2 text-xs text-slate-600">#{index + 1}</span><span className="font-bold">{item.label}</span></div>
-            <div className="flex items-center gap-2"><span className="text-xs text-slate-500">{item.count} عنوان</span><span className="rounded-full bg-violet-500/10 px-2 py-1 text-xs font-black text-violet-200">{item.score.toFixed(1)}</span></div>
+            <div className="min-w-0"><span className="ml-2 text-xs text-slate-600">رتبه {(index + 1).toLocaleString("fa-IR")}</span><span className="font-bold">{item.label}</span></div>
+            <div className="flex items-center gap-2"><span className="text-xs text-slate-500">{item.count.toLocaleString("fa-IR")} عنوان</span><span className="rounded-full bg-violet-500/10 px-2 py-1 text-xs font-black text-violet-200">{item.score.toLocaleString("fa-IR", { maximumFractionDigits: 1 })}</span></div>
           </div>
         )) : <p className="text-sm text-slate-500">داده کافی نیست.</p>}
       </div>
@@ -118,21 +118,21 @@ export default async function TasteStatsPage() {
       <section className="border-b border-white/5 bg-[radial-gradient(circle_at_75%_0%,rgba(124,58,237,.18),transparent_32%),radial-gradient(circle_at_15%_0%,rgba(37,99,235,.12),transparent_30%)]">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <Link href="/dashboard" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-slate-400 hover:text-white"><ChevronRight className="h-4 w-4" /> بازگشت به داشبورد</Link>
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1.5 text-xs font-black text-violet-200"><Sparkles className="h-4 w-4" /> Taste DNA v1</div>
-          <h1 className="mt-4 text-3xl font-black sm:text-4xl">DNA سینمایی من</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">هویت سینمایی تو از تاریخچه واقعی FilmTrack ساخته می‌شود؛ قابل‌توضیح، خصوصی و بدون مدل پولی.</p>
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1.5 text-xs font-black text-violet-200"><Sparkles className="h-4 w-4" /> تحلیل سلیقه شخصی</div>
+          <h1 className="mt-4 text-3xl font-black sm:text-4xl">هویت سینمایی من</h1>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">هویت سینمایی تو از تاریخچه واقعی فیلم‌ترک ساخته می‌شود؛ قابل‌توضیح، خصوصی و بدون مدل پولی.</p>
         </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        {!enough ? <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-5 text-sm leading-7 text-amber-100">برای DNA دقیق‌تر حداقل چند عنوان را ثبت، امتیازدهی یا تماشا کن. همین صفحه با رشد تاریخچه‌ات دقیق‌تر می‌شود.</div> : null}
+        {!enough ? <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-5 text-sm leading-7 text-amber-100">برای تحلیل دقیق‌تر حداقل چند عنوان را ثبت، امتیازدهی یا تماشا کن. همین صفحه با رشد تاریخچه‌ات دقیق‌تر می‌شود.</div> : null}
 
         <section className="grid grid-cols-2 gap-3 md:grid-cols-5">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><Star className="h-4 w-4 text-amber-300"/><p className="mt-3 text-2xl font-black">{dna.averageRating ?? "—"}</p><p className="mt-1 text-xs text-slate-500">میانگین امتیاز · {dna.ratingStrictness}</p></div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><RotateCcw className="h-4 w-4 text-violet-300"/><p className="mt-3 text-2xl font-black">{dna.rewatchRate}%</p><p className="mt-1 text-xs text-slate-500">نرخ بازتماشا</p></div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><Clapperboard className="h-4 w-4 text-blue-300"/><p className="mt-3 text-2xl font-black">{dna.movieShare}%</p><p className="mt-1 text-xs text-slate-500">سهم فیلم</p></div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><BarChart3 className="h-4 w-4 text-emerald-300"/><p className="mt-3 text-2xl font-black">{dna.tvShare}%</p><p className="mt-1 text-xs text-slate-500">سهم سریال</p></div>
-          <div className="col-span-2 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:col-span-1"><Sparkles className="h-4 w-4 text-violet-300"/><p className="mt-3 text-2xl font-black">{dna.sampleSize}</p><p className="mt-1 text-xs text-slate-500">عنوان تحلیل‌شده</p></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><Star className="h-4 w-4 text-amber-300"/><p className="mt-3 text-2xl font-black">{dna.averageRating === null ? "—" : dna.averageRating.toLocaleString("fa-IR", { maximumFractionDigits: 1 })}</p><p className="mt-1 text-xs text-slate-500">میانگین امتیاز · {dna.ratingStrictness}</p></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><RotateCcw className="h-4 w-4 text-violet-300"/><p className="mt-3 text-2xl font-black">{dna.rewatchRate.toLocaleString("fa-IR", { maximumFractionDigits: 1 })}٪</p><p className="mt-1 text-xs text-slate-500">نرخ بازتماشا</p></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><Clapperboard className="h-4 w-4 text-blue-300"/><p className="mt-3 text-2xl font-black">{dna.movieShare.toLocaleString("fa-IR", { maximumFractionDigits: 1 })}٪</p><p className="mt-1 text-xs text-slate-500">سهم فیلم</p></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><BarChart3 className="h-4 w-4 text-emerald-300"/><p className="mt-3 text-2xl font-black">{dna.tvShare.toLocaleString("fa-IR", { maximumFractionDigits: 1 })}٪</p><p className="mt-1 text-xs text-slate-500">سهم سریال</p></div>
+          <div className="col-span-2 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:col-span-1"><Sparkles className="h-4 w-4 text-violet-300"/><p className="mt-3 text-2xl font-black">{dna.sampleSize.toLocaleString("fa-IR")}</p><p className="mt-1 text-xs text-slate-500">عنوان تحلیل‌شده</p></div>
         </section>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-2">
@@ -144,8 +144,8 @@ export default async function TasteStatsPage() {
         </div>
 
         <section className="mt-6 rounded-3xl border border-violet-400/15 bg-violet-500/[0.07] p-5 sm:p-6">
-          <h2 className="font-black">این DNA فقط نمایش آماری نیست</h2>
-          <p className="mt-2 text-sm leading-7 text-slate-400">همین مدل ورودی Recommendation v2 و Taste Match #87 خواهد بود؛ یعنی FilmTrack می‌تواند توضیح دهد چرا دو کاربر سلیقه مشابه دارند یا چرا یک عنوان به تو پیشنهاد شده است.</p>
+          <h2 className="font-black">این تحلیل فقط نمایش آماری نیست</h2>
+          <p className="mt-2 text-sm leading-7 text-slate-400">همین الگو ورودی موتور پیشنهاد و سنجش شباهت سلیقه خواهد بود؛ یعنی فیلم‌ترک می‌تواند توضیح دهد چرا دو کاربر سلیقه مشابه دارند یا چرا یک عنوان به تو پیشنهاد شده است.</p>
           <Link href="/dashboard/recommendations" className="mt-4 inline-flex text-sm font-black text-violet-200 hover:text-white">رفتن به «چی ببینم؟»</Link>
         </section>
       </div>

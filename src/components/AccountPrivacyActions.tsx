@@ -51,7 +51,7 @@ export default function AccountPrivacyActions({ deleteEnabled }: { deleteEnabled
     if (!result.ok) {
       setMessage(
         result.code === "disabled"
-          ? "حذف حساب هنوز برای Production فعال نشده است."
+          ? "حذف حساب هنوز برای نسخه اصلی فعال نشده است."
           : "حذف حساب انجام نشد. هیچ داده‌ای عمداً حذف نشد.",
       );
       return;
@@ -70,7 +70,7 @@ export default function AccountPrivacyActions({ deleteEnabled }: { deleteEnabled
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-black">دریافت نسخه داده‌های من</h2>
             <p className="mt-2 text-sm leading-7 text-slate-400">
-              یک فایل JSON قابل‌حمل از فهرست‌ها، امتیازها، دفترچه تماشا، پیشرفت قسمت‌ها و داده‌های اجتماعی متعلق به حساب خودت دریافت می‌کنی.
+              یک فایل قابل‌حمل از فهرست‌ها، امتیازها، دفترچه تماشا، پیشرفت قسمت‌ها و داده‌های اجتماعی متعلق به حساب خودت دریافت می‌کنی.
             </p>
             <Button
               onClick={handleExport}
@@ -91,12 +91,12 @@ export default function AccountPrivacyActions({ deleteEnabled }: { deleteEnabled
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-black">حذف دائمی حساب</h2>
             <p className="mt-2 text-sm leading-7 text-slate-400">
-              این عملیات برگشت‌پذیر نیست و پس از فعال‌سازی Gate دیتابیس، حساب و داده‌های متعلق به آن را حذف می‌کند. قبل از حذف می‌توانی خروجی داده‌ها را دریافت کنی.
+              این عملیات برگشت‌پذیر نیست و پس از تأیید نهایی پایگاه‌داده، حساب و داده‌های متعلق به آن را حذف می‌کند. قبل از حذف می‌توانی خروجی داده‌ها را دریافت کنی.
             </p>
 
             {!deleteEnabled ? (
               <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-500/[0.06] p-4 text-sm leading-7 text-amber-100">
-                حذف حساب هنوز عمداً غیرفعال است تا migration مربوط به Production جداگانه بررسی و تأیید شود.
+                حذف حساب هنوز عمداً غیرفعال است تا تغییر ساختاری مربوط به نسخه اصلی جداگانه بررسی و تأیید شود.
               </div>
             ) : (
               <>

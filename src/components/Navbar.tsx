@@ -30,10 +30,22 @@ import {
 const desktopLinkClass =
   "inline-flex min-h-10 items-center gap-1.5 rounded-xl px-2.5 text-sm font-bold text-slate-400 transition hover:bg-white/[0.04] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60";
 
+async function getIsLoggedIn(): Promise<boolean> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return false;
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data: claimsData } = await supabase.auth.getClaims();
+    return Boolean(claimsData?.claims?.sub);
+  } catch {
+    return false;
+  }
+}
+
 export default async function Navbar() {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const isLoggedIn = Boolean(claimsData?.claims?.sub);
+  const isLoggedIn = await getIsLoggedIn();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#050914]/90 shadow-[0_12px_40px_rgba(0,0,0,.18)] backdrop-blur-xl">
@@ -42,7 +54,7 @@ export default async function Navbar() {
           <div className="flex min-w-0 items-center gap-3 lg:gap-5">
             <Logo />
 
-            <nav aria-label="ناوبری اصلی" className="hidden items-center gap-0.5 md:flex">
+            <nav aria-label="ناوبری اصلی" className="hidden items-center gap-0.5 xl:flex">
               <Link href="/" className={desktopLinkClass}><Home className="h-4 w-4" /> خانه</Link>
 
               <DropdownMenu>
@@ -96,7 +108,7 @@ export default async function Navbar() {
             </nav>
           </div>
 
-          <div className="hidden min-w-0 flex-1 justify-center lg:flex"><div className="w-full max-w-[330px]"><LiveSearch /></div></div>
+          <div className="hidden min-w-0 flex-1 justify-center xl:flex"><div className="w-full max-w-[330px]"><LiveSearch /></div></div>
 
           <div className="flex items-center gap-2">
             {isLoggedIn ? (
@@ -108,7 +120,7 @@ export default async function Navbar() {
               <Link href="/auth"><Button className="h-10 rounded-xl bg-gradient-to-l from-violet-600 to-blue-500 px-4 font-black text-white shadow-lg shadow-blue-950/20 hover:opacity-95">ورود</Button></Link>
             )}
 
-            <details className="relative md:hidden">
+            <details className="relative xl:hidden">
               <summary aria-label="باز کردن منوی FilmTrack" className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-slate-200 transition hover:bg-white/[0.08] [&::-webkit-details-marker]:hidden"><Menu className="h-5 w-5" /></summary>
               <nav className="fixed inset-x-3 top-[72px] z-50 max-h-[calc(100vh-88px)] overflow-y-auto rounded-2xl border border-white/10 bg-[#09111f]/98 p-2 text-sm text-slate-200 shadow-2xl backdrop-blur-xl sm:left-4 sm:right-auto sm:min-w-72">
                 <Link href="/" className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 font-bold hover:bg-white/[0.06]"><Home className="h-4 w-4 text-blue-300" /> خانه</Link>
@@ -135,7 +147,7 @@ export default async function Navbar() {
             </details>
           </div>
         </div>
-        <div className="pb-3 lg:hidden"><LiveSearch /></div>
+        <div className="pb-3 xl:hidden"><LiveSearch /></div>
       </div>
     </header>
   );

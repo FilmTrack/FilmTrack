@@ -64,6 +64,20 @@ async function fetchTMDB(endpoint: string): Promise<TMDBResult[]> {
   }
 }
 
+async function getIsLoggedIn(): Promise<boolean> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return false;
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data: claimsData } = await supabase.auth.getClaims();
+    return Boolean(claimsData?.claims?.sub);
+  } catch {
+    return false;
+  }
+}
+
 function titleOf(item: TMDBResult) {
   return item.title || item.name || "بدون عنوان";
 }
@@ -150,10 +164,7 @@ export default async function Home() {
   ]);
 
   const hero = trendingMovies.find((item) => item.backdrop_path) || trendingMovies[0] || trendingShows[0];
-
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const isLoggedIn = Boolean(claimsData?.claims?.sub);
+  const isLoggedIn = await getIsLoggedIn();
 
   const genres = [
     { id: 28, name: "اکشن" },

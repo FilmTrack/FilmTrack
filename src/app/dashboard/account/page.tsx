@@ -22,7 +22,7 @@ export default async function AccountPrivacyPage() {
       <div className="mx-auto max-w-4xl">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-black text-blue-300">Account & Privacy Center</p>
+            <p className="text-xs font-black text-blue-300">مرکز حساب و حریم خصوصی</p>
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">حساب و حریم خصوصی</h1>
             <p className="mt-3 max-w-2xl text-sm leading-8 text-slate-400">
               داده‌های شخصی FilmTrack را دریافت کن، وضعیت حساب را ببین و کنترل حذف دائمی حساب را از یک محل مدیریت کن.
@@ -35,9 +35,9 @@ export default async function AccountPrivacyPage() {
 
         <section className="mb-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
           <p className="text-xs font-bold text-slate-500">حساب فعال</p>
-          <p dir="ltr" className="mt-2 break-all text-sm font-black text-white">{user?.email ?? "FilmTrack account"}</p>
+          <p dir="ltr" className="mt-2 break-all text-sm font-black text-white">{user?.email ?? "حساب FilmTrack"}</p>
           <p className="mt-3 text-xs leading-6 text-slate-500">
-            خروجی داده‌ها فقط با session همین حساب و تحت RLS خوانده می‌شود؛ هیچ service-role credential به مرورگر ارسال نمی‌شود.
+            خروجی داده‌ها فقط با نشست همین حساب و بر اساس سیاست‌های دسترسی سطح ردیف خوانده می‌شود؛ هیچ دسترسی مدیریتی یا اعتبارنامه حساس به مرورگر ارسال نمی‌شود.
           </p>
         </section>
 

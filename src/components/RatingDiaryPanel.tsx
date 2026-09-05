@@ -12,6 +12,10 @@ import {
 } from "@/lib/m2/rating-diary-client";
 import { isRatingDiaryRuntimeEnabled } from "@/lib/m2/readiness";
 
+function faNumber(value: number) {
+  return value.toLocaleString("fa-IR");
+}
+
 export default function RatingDiaryPanel({
   titleId,
   titleType,
@@ -97,7 +101,7 @@ export default function RatingDiaryPanel({
               <div>
                 <p className="font-bold text-white">زیرساخت آماده است</p>
                 <p className="mt-1 text-sm leading-6 text-slate-400">
-                  امتیازدهی، ثبت تاریخ تماشا و Rewatch آماده‌اند و بعد از فعال‌سازی نهایی سرویس در دسترس قرار می‌گیرند.
+                  امتیازدهی، ثبت تاریخ تماشا و بازتماشا آماده‌اند و بعد از فعال‌سازی نهایی سرویس در دسترس قرار می‌گیرند.
                 </p>
               </div>
             </div>
@@ -106,24 +110,24 @@ export default function RatingDiaryPanel({
       ) : (
         <div className="grid gap-0 lg:grid-cols-2">
           <div className="p-4 sm:p-5 lg:border-l lg:border-white/10">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-bold text-white">امتیاز من</p>
                 <p className="mt-1 text-xs text-slate-500">از ۱ تا ۱۰، دقیق و شخصی</p>
               </div>
-              <div className="flex items-center gap-1 text-amber-300">
+              <div className="flex shrink-0 items-center gap-1 text-amber-300" aria-live="polite">
                 <Star className="h-4 w-4 fill-current" />
-                <span className="text-sm font-black">{rating ?? "—"}/10</span>
+                <span className="text-sm font-black">{rating === null ? "—" : faNumber(rating)} از ۱۰</span>
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-10 lg:grid-cols-5 xl:grid-cols-10">
+            <div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-10 lg:grid-cols-5 xl:grid-cols-10" role="group" aria-label="انتخاب امتیاز از ۱ تا ۱۰">
               {Array.from({ length: 10 }, (_, index) => index + 1).map((value) => (
                 <button
                   key={value}
                   type="button"
                   aria-pressed={rating === value}
-                  aria-label={`امتیاز ${value} از 10`}
+                  aria-label={`امتیاز ${faNumber(value)} از ۱۰`}
                   onClick={() => setRating(value)}
                   className={
                     rating === value
@@ -131,7 +135,7 @@ export default function RatingDiaryPanel({
                       : "min-h-11 rounded-xl border border-white/10 bg-white/[0.03] font-bold text-slate-300 transition hover:-translate-y-0.5 hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                   }
                 >
-                  {value}
+                  {faNumber(value)}
                 </button>
               ))}
             </div>
@@ -147,18 +151,18 @@ export default function RatingDiaryPanel({
           </div>
 
           <div className="border-t border-white/10 p-4 sm:p-5 lg:border-t-0">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-bold text-white">دفترچه تماشا</p>
                 <p className="mt-1 text-xs text-slate-500">هر بار تماشا را جدا ثبت کنید</p>
               </div>
-              <div className="flex items-center gap-2 text-slate-400">
+              <div className="flex items-center gap-2 text-slate-400" aria-hidden="true">
                 <CalendarDays className="h-4 w-4" />
                 <RotateCcw className="h-4 w-4" />
               </div>
             </div>
 
-            <label htmlFor="filmtrack-watched-on" className="sr-only">
+            <label htmlFor="filmtrack-watched-on" className="mt-4 block text-xs font-bold text-slate-400">
               تاریخ تماشا
             </label>
             <input
@@ -166,7 +170,7 @@ export default function RatingDiaryPanel({
               type="date"
               value={watchedOn}
               onChange={(event) => setWatchedOn(event.target.value)}
-              className="mt-4 min-h-12 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-white outline-none transition [color-scheme:dark] focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+              className="mt-2 min-h-12 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-white outline-none transition [color-scheme:dark] focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
             />
 
             <Button
@@ -179,7 +183,7 @@ export default function RatingDiaryPanel({
               {busy === "diary" ? "در حال ثبت تماشا..." : "ثبت در دفترچه"}
             </Button>
             <p className="mt-3 text-xs leading-5 text-slate-500">
-              ثبت دوباره همین عنوان، Rewatch محسوب می‌شود و تاریخچه شما حفظ خواهد شد.
+              ثبت دوباره همین عنوان، بازتماشا محسوب می‌شود و تاریخچه شما حفظ خواهد شد.
             </p>
           </div>
         </div>

@@ -121,7 +121,7 @@ export default function CommunityProfileEditor({
           <label className="grid gap-2">
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm font-bold text-slate-200">درباره من</span>
-              <span className="text-xs text-slate-500">{bio.length}/{COMMUNITY_BIO_MAX_LENGTH}</span>
+              <span className="text-xs text-slate-500">{bio.length.toLocaleString("fa-IR")}/{COMMUNITY_BIO_MAX_LENGTH.toLocaleString("fa-IR")}</span>
             </div>
             <textarea
               value={bio}

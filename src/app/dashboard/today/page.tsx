@@ -90,7 +90,7 @@ export default async function TodayPage() {
     <main className="min-h-screen bg-[#050914] px-4 pb-16 pt-24 text-white" dir="rtl">
       <div className="mx-auto max-w-6xl space-y-8">
         <header className="rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_80%_0%,rgba(37,99,235,.14),transparent_35%),radial-gradient(circle_at_20%_10%,rgba(124,58,237,.12),transparent_32%)] p-6 sm:p-8">
-          <p className="text-xs font-black text-blue-300">FILMTRACK TODAY</p>
+          <p className="text-xs font-black text-blue-300">مرکز روزانه فیلم‌ترک</p>
           <h1 className="mt-2 text-3xl font-black sm:text-4xl">امروز برای تو</h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
             ادامه تماشا، قسمت‌های نزدیک، پیشنهادهای شخصی و میانبرهای مهم حساب تو؛ در یک صفحه خصوصی و روزانه.
@@ -110,8 +110,8 @@ export default async function TodayPage() {
         ) : isColdStart ? (
           <section className="rounded-3xl border border-blue-400/20 bg-blue-500/[0.07] p-6 sm:p-8">
             <Sparkles className="h-7 w-7 text-blue-300" />
-            <h2 className="mt-4 text-2xl font-black">FilmTrack را با سلیقه خودت شروع کن</h2>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-slate-400">چند فیلم یا سریال را به فهرستت اضافه کن. بعد از همان داده‌های خودت، تقویم، Taste DNA و پیشنهادهای شخصی شکل می‌گیرند.</p>
+            <h2 className="mt-4 text-2xl font-black">فیلم‌ترک را با سلیقه خودت شروع کن</h2>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-slate-400">چند فیلم یا سریال را به فهرستت اضافه کن. بعد از همان داده‌های خودت، تقویم، نمای سلیقه و پیشنهادهای شخصی شکل می‌گیرند.</p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/discover" className="rounded-xl bg-blue-500 px-5 py-3 text-sm font-black text-white">کشف فارسی</Link>
               <Link href="/dashboard/import" className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-black text-white">انتقال تاریخچه</Link>
@@ -126,22 +126,22 @@ export default async function TodayPage() {
 
             <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
               <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><CalendarDays className="h-5 w-5 text-violet-300" /><h2 className="text-lg font-black">قسمت‌های نزدیک</h2></div><Link href="/dashboard/calendar" className="text-xs font-bold text-blue-300">تقویم کامل</Link></div>
-              {nearEvents.length ? <div className="mt-4 grid gap-2">{nearEvents.map((event) => <Link key={`${event.titleId}-${event.seasonNumber}-${event.episodeNumber}`} href={event.href} className="rounded-xl border border-white/10 bg-black/15 px-4 py-3 transition hover:border-violet-400/25"><p className="text-sm font-black">{event.titleName}</p><p className="mt-1 text-xs text-slate-500">فصل {event.seasonNumber} · قسمت {event.episodeNumber} · {event.airDate}</p></Link>)}</div> : <p className="mt-4 text-sm leading-7 text-slate-500">برای هفت روز آینده قسمت اعلام‌شده‌ای پیدا نشد.</p>}
+              {nearEvents.length ? <div className="mt-4 grid gap-2">{nearEvents.map((event) => <Link key={`${event.titleId}-${event.seasonNumber}-${event.episodeNumber}`} href={event.href} className="rounded-xl border border-white/10 bg-black/15 px-4 py-3 transition hover:border-violet-400/25"><p className="text-sm font-black">{event.titleName}</p><p className="mt-1 text-xs text-slate-500">فصل {event.seasonNumber.toLocaleString("fa-IR")} · قسمت {event.episodeNumber.toLocaleString("fa-IR")} · {event.airDate}</p></Link>)}</div> : <p className="mt-4 text-sm leading-7 text-slate-500">برای هفت روز آینده قسمت اعلام‌شده‌ای پیدا نشد.</p>}
             </section>
           </div>
         )}
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Link href="/dashboard/recommendations" className="rounded-2xl border border-violet-400/15 bg-violet-500/[0.06] p-5 transition hover:bg-violet-500/10"><Sparkles className="h-5 w-5 text-violet-300" /><p className="mt-3 font-black">چی ببینم؟</p><p className="mt-1 text-xs leading-6 text-slate-500">Recommendation v2 بر پایه Taste DNA و موقعیت تو</p></Link>
-          <Link href="/dashboard/stats" className="rounded-2xl border border-blue-400/15 bg-blue-500/[0.06] p-5 transition hover:bg-blue-500/10"><ChartNoAxesColumnIncreasing className="h-5 w-5 text-blue-300" /><p className="mt-3 font-black">Taste DNA و آمار</p><p className="mt-1 text-xs leading-6 text-slate-500">الگوی واقعی سلیقه و رفتار تماشای تو</p></Link>
+          <Link href="/dashboard/recommendations" className="rounded-2xl border border-violet-400/15 bg-violet-500/[0.06] p-5 transition hover:bg-violet-500/10"><Sparkles className="h-5 w-5 text-violet-300" /><p className="mt-3 font-black">چی ببینم؟</p><p className="mt-1 text-xs leading-6 text-slate-500">پیشنهادهای شخصی بر پایه الگوی سلیقه و موقعیت تو</p></Link>
+          <Link href="/dashboard/stats" className="rounded-2xl border border-blue-400/15 bg-blue-500/[0.06] p-5 transition hover:bg-blue-500/10"><ChartNoAxesColumnIncreasing className="h-5 w-5 text-blue-300" /><p className="mt-3 font-black">نمای سلیقه و آمار</p><p className="mt-1 text-xs leading-6 text-slate-500">الگوی واقعی سلیقه و رفتار تماشای تو</p></Link>
           <Link href="/dashboard/notifications" className="rounded-2xl border border-amber-400/15 bg-amber-500/[0.05] p-5 transition hover:bg-amber-500/10"><Bell className="h-5 w-5 text-amber-300" /><p className="mt-3 font-black">اعلان‌ها</p><p className="mt-1 text-xs leading-6 text-slate-500">قسمت‌ها، فصل‌ها و تغییرات مرتبط با فهرست تو</p></Link>
-          <Link href="/dashboard/history" className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:bg-white/[0.06]"><History className="h-5 w-5 text-emerald-300" /><p className="mt-3 font-black">تاریخچه من</p><p className="mt-1 text-xs leading-6 text-slate-500">امتیازها، Diary و Rewatchهای شخصی</p></Link>
+          <Link href="/dashboard/history" className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:bg-white/[0.06]"><History className="h-5 w-5 text-emerald-300" /><p className="mt-3 font-black">تاریخچه من</p><p className="mt-1 text-xs leading-6 text-slate-500">امتیازها، دفترچه تماشا و بازتماشاهای شخصی</p></Link>
         </section>
 
         {!isColdStart && (
           <section className="rounded-3xl border border-white/10 bg-white/[0.025] p-5 sm:p-6">
             <div className="flex items-center gap-2"><Clock3 className="h-5 w-5 text-slate-300" /><h2 className="text-lg font-black">آخرین تغییرهای فهرست تو</h2></div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">{recent.map((row) => <Link key={row.id} href={`/title/${row.title_id}?type=${row.title_type}`} className="rounded-xl border border-white/10 bg-black/15 p-3"><p className="text-xs font-black">{row.title_type === "tv" ? "سریال" : "فیلم"} #{row.title_id}</p><p className="mt-1 text-[11px] text-slate-500">{STATUS_LABELS[row.status] || row.status}</p></Link>)}</div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">{recent.map((row) => <Link key={row.id} href={`/title/${row.title_id}?type=${row.title_type}`} className="rounded-xl border border-white/10 bg-black/15 p-3"><p className="text-xs font-black">{row.title_type === "tv" ? "سریال" : "فیلم"} #{row.title_id.toLocaleString("fa-IR")}</p><p className="mt-1 text-[11px] text-slate-500">{STATUS_LABELS[row.status] || row.status}</p></Link>)}</div>
           </section>
         )}
       </div>
