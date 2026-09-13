@@ -22,6 +22,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getRottenTomatoesUrl } from "@/lib/title-links.mjs";
 import {
   fetchJson,
+  fetchTmdbJson,
+  hasTmdbCredential,
   type OmdbResponse,
   type TmdbMediaType,
   type TmdbTitleDetails,
@@ -38,15 +40,14 @@ type TitlePageProps = {
 };
 
 async function fetchTitleDetailsForSeo(id: string, type: TmdbMediaType) {
-  const apiKey = process.env.TMDB_API_KEY;
-  if (!apiKey || !id) return null;
+  if (!hasTmdbCredential() || !id) return null;
 
   const [enRes, faRes] = await Promise.all([
-    fetchJson<TmdbTitleDetails>(
-      `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=en-US`,
+    fetchTmdbJson<TmdbTitleDetails>(
+      `https://api.themoviedb.org/3/${type}/${id}?language=en-US`,
     ),
-    fetchJson<TmdbTitleDetails>(
-      `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=fa-IR`,
+    fetchTmdbJson<TmdbTitleDetails>(
+      `https://api.themoviedb.org/3/${type}/${id}?language=fa-IR`,
     ),
   ]);
 
@@ -85,16 +86,15 @@ export default async function TitlePage({ params, searchParams }: TitlePageProps
   const { id } = await params;
   const { type: rawType } = await searchParams;
   const type: TmdbMediaType = rawType === "tv" ? "tv" : "movie";
-  const apiKey = process.env.TMDB_API_KEY;
 
-  if (!apiKey || !id) return notFound();
+  if (!hasTmdbCredential() || !id) return notFound();
 
   const [enRes, faRes] = await Promise.all([
-    fetchJson<TmdbTitleDetails>(
-      `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=en-US&append_to_response=credits,videos`,
+    fetchTmdbJson<TmdbTitleDetails>(
+      `https://api.themoviedb.org/3/${type}/${id}?language=en-US&append_to_response=credits,videos`,
     ),
-    fetchJson<TmdbTitleDetails>(
-      `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=fa-IR`,
+    fetchTmdbJson<TmdbTitleDetails>(
+      `https://api.themoviedb.org/3/${type}/${id}?language=fa-IR`,
     ),
   ]);
 
