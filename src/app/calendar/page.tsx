@@ -4,7 +4,8 @@ import { CalendarDays, Film, Sparkles, Tv } from "lucide-react";
 import TmdbImage from "@/components/TmdbImage";
 import { demoCalendarItems, isLocalVisualQa } from "@/lib/demo-catalog";
 import {
-  fetchJson,
+  fetchTmdbJson,
+  hasTmdbCredential,
   type TmdbMediaSummary,
   type TmdbSearchResponse,
 } from "@/lib/tmdb";
@@ -15,7 +16,7 @@ type CalendarRelease = TmdbMediaSummary & {
 };
 
 export default async function CalendarPage() {
-  const apiKey = process.env.TMDB_API_KEY;
+  const hasLiveCatalog = hasTmdbCredential();
   const today = new Date();
   const nextWeek = new Date(today);
   nextWeek.setDate(today.getDate() + 7);
@@ -28,7 +29,6 @@ export default async function CalendarPage() {
   const showUrl = new URL("https://api.themoviedb.org/3/discover/tv");
 
   for (const url of [movieUrl, showUrl]) {
-    url.searchParams.set("api_key", apiKey ?? "");
     url.searchParams.set("language", "fa-IR");
     url.searchParams.set("sort_by", "popularity.desc");
   }
@@ -38,10 +38,10 @@ export default async function CalendarPage() {
   showUrl.searchParams.set("air_date.gte", todayStr);
   showUrl.searchParams.set("air_date.lte", nextWeekStr);
 
-  const [moviesData, showsData] = apiKey
+  const [moviesData, showsData] = hasLiveCatalog
     ? await Promise.all([
-        fetchJson<TmdbSearchResponse>(movieUrl),
-        fetchJson<TmdbSearchResponse>(showUrl),
+        fetchTmdbJson<TmdbSearchResponse>(movieUrl),
+        fetchTmdbJson<TmdbSearchResponse>(showUrl),
       ])
     : [null, null];
 

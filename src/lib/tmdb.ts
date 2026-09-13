@@ -41,7 +41,56 @@ export type TmdbRating = { Source: string; Value: string };
 export type OmdbResponse = { Response?: string; Ratings?: TmdbRating[] };
 export type TranslationResponse = { responseData?: { translatedText?: string } };
 
-export async function fetchJson<T>(input: string | URL | Request, init?: RequestInit): Promise<T | null> {
+export function hasTmdbCredential(): boolean {
+  return Boolean(
+    process.env.TMDB_API_READ_ACCESS_TOKEN?.trim() ||
+    process.env.TMDB_ACCESS_TOKEN?.trim() ||
+    process.env.TMDB_API_KEY?.trim(),
+  );
+}
+
+export async function fetchTmdbJson<T>(
+  input: string | URL,
+  init?: RequestInit,
+): Promise<T | null> {
+  try {
+    const token =
+      process.env.TMDB_API_READ_ACCESS_TOKEN?.trim() ||
+      process.env.TMDB_ACCESS_TOKEN?.trim();
+
+    const apiKey = process.env.TMDB_API_KEY?.trim();
+
+    if (!token && !apiKey) return null;
+
+    const url = new URL(input.toString());
+
+    const headers = new Headers(init?.headers);
+    headers.set("Accept", "application/json");
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+      url.searchParams.delete("api_key");
+    } else if (apiKey) {
+      url.searchParams.set("api_key", apiKey);
+    }
+
+    const response = await fetch(url.toString(), {
+      ...init,
+      headers,
+    });
+
+    if (!response.ok) return null;
+
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchJson<T>(
+  input: string | URL | Request,
+  init?: RequestInit,
+): Promise<T | null> {
   try {
     const response = await fetch(input, init);
     if (!response.ok) return null;

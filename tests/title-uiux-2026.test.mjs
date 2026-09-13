@@ -11,8 +11,8 @@ const layout = await readFile(new URL("../src/app/layout.tsx", import.meta.url),
 
 test("approved FilmTrack homepage exposes cinematic live-content discovery", () => {
   assert.match(homePage, /bg-\[#050914\]/);
-  assert.match(homePage, /trending\/movie\/week/);
-  assert.match(homePage, /trending\/tv\/week/);
+  assert.match(homePage, /trending\/movie\/day/);
+  assert.match(homePage, /trending\/tv\/day/);
   assert.match(homePage, /MediaRail/);
   assert.match(homePage, /from-violet-600 to-blue-500/);
   assert.match(homePage, /خانه فارسی طرفداران فیلم و سریال/);
@@ -20,7 +20,7 @@ test("approved FilmTrack homepage exposes cinematic live-content discovery", () 
 
 test("homepage removes the previous empty hero-only experience", () => {
   assert.doesNotMatch(homePage, /h-\[50vh\]/);
-  assert.match(homePage, /منتخب این هفته/);
+  assert.match(homePage, /محبوب‌ترین انتخاب امروز/);
   assert.match(homePage, /کاوش بر اساس حال‌وهوای تماشا/);
   assert.match(homePage, /پوستر \$\{titleOf\(item\)\}/);
 });

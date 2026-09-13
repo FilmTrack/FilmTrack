@@ -5,6 +5,10 @@ import { Film, ListVideo, Search, Sparkles, Tv } from "lucide-react";
 import TmdbImage from "@/components/TmdbImage";
 import { Button } from "@/components/ui/button";
 import { buildTmdbDiscoverPath, parsePersianDiscoveryIntent } from "@/lib/m4/discovery";
+import {
+  fetchTmdbJson,
+  hasTmdbCredential,
+} from "@/lib/tmdb";
 
 export const metadata: Metadata = {
   title: "چی ببینم؟ جستجوی فارسی بر اساس حال‌وهوا | FilmTrack",
@@ -26,27 +30,25 @@ type TmdbItem = {
 };
 
 async function fetchDiscovery(path: string) {
-  const apiKey = process.env.TMDB_API_KEY;
-  if (!apiKey) return [] as TmdbItem[];
+  if (!hasTmdbCredential()) return [] as TmdbItem[];
 
-  try {
-    const response = await fetch(
-      `https://api.themoviedb.org/3${path}&api_key=${apiKey}&language=fa-IR&page=1`,
-      { next: { revalidate: 1800 } },
-    );
-    if (!response.ok) return [] as TmdbItem[];
-    const payload = (await response.json()) as { results?: TmdbItem[] };
-    return (payload.results || []).slice(0, 24);
-  } catch {
-    return [] as TmdbItem[];
-  }
+  const separator = path.includes("?") ? "&" : "?";
+  const url = new URL(
+    `https://api.themoviedb.org/3${path}${separator}language=fa-IR&page=1`,
+  );
+
+  const payload = await fetchTmdbJson<{ results?: TmdbItem[] }>(url, {
+    next: { revalidate: 1800 },
+  });
+
+  return (payload?.results ?? []).slice(0, 24);
 }
 
 export default async function DiscoverPage({ searchParams }: { searchParams: SearchParams }) {
   const { q = "" } = await searchParams;
   const query = q.trim();
   const intent = query ? parsePersianDiscoveryIntent(query) : null;
-  const hasLiveCatalog = Boolean(process.env.TMDB_API_KEY);
+  const hasLiveCatalog = hasTmdbCredential();
   const results = intent ? await fetchDiscovery(buildTmdbDiscoverPath(intent)) : [];
 
   return (

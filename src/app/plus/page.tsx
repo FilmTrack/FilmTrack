@@ -64,7 +64,7 @@ export default function PlusPage() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-300">
               <Sparkles className="h-4 w-4" />
-              FilmTrack Plus — در حال آماده‌سازی
+              FilmTrack Plus
             </div>
             <h1 className="text-4xl font-black tracking-tight md:text-6xl">
               برای طرفدارهای حرفه‌ای؛ بدون خراب‌کردن تجربهٔ رایگان
@@ -126,11 +126,11 @@ export default function PlusPage() {
                 <h2 className="mt-1 text-2xl font-black">اختیاری و پیشرفته</h2>
               </div>
               <span className="rounded-full border border-blue-400/20 bg-blue-400/10 px-3 py-1 text-xs font-bold text-blue-200">
-                پایلوت آینده
+                نسخه حرفه‌ای
               </span>
             </div>
             <p className="mb-7 leading-7 text-gray-300">
-              قیمت‌گذاری و فروش فقط بعد از اثبات Retention و آماده‌شدن الزامات حریم خصوصی فعال می‌شود.
+              امکانات حرفه‌ای برای کاربرانی که می‌خواهند تحلیل عمیق‌تر، شخصی‌سازی بیشتر و تجربه کامل‌تری از FilmTrack داشته باشند.
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
               {plusFeatures.map(({ icon: Icon, title, description }) => (
@@ -172,13 +172,19 @@ export default function PlusPage() {
       </section>
 
       <section className="mx-auto max-w-4xl px-4 py-16 text-center md:px-8">
-        <p className="text-sm font-bold text-amber-300">وضعیت فعلی</p>
-        <h2 className="mt-3 text-3xl font-black">Checkout هنوز فعال نیست</h2>
+        <p className="text-sm font-bold text-blue-300">FilmTrack Plus</p>
+        <h2 className="mt-3 text-3xl font-black">نسخه حرفه‌ای برای عاشقان فیلم و سریال</h2>
         <p className="mx-auto mt-4 max-w-2xl leading-8 text-gray-400">
-          قبل از فروش Plus باید چهار هفته روند WAT پایدار یا رو به رشد، baseline قابل اتکای D30
-          و مسیرهای Export/Delete و حریم خصوصی آماده باشند. تا آن زمان تمرکز FilmTrack روی ساختن
-          محصولی است که کاربران واقعاً بخواهند به آن برگردند.
+          Plus با تمرکز روی آمار پیشرفته، پیشنهادهای شخصی‌تر، کنترل بیشتر روی فهرست‌ها
+          و قابلیت‌های حرفه‌ای طراحی شده است. فعال‌سازی پرداخت در مرحله نهایی عرضه انجام می‌شود.
         </p>
+        <div className="mt-7 flex justify-center">
+          <Link href="/auth">
+            <Button size="lg" className="rounded-full bg-blue-600 px-8 hover:bg-blue-700">
+              شروع با حساب FilmTrack
+            </Button>
+          </Link>
+        </div>
       </section>
     </div>
   );

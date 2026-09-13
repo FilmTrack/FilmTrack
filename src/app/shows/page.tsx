@@ -4,21 +4,20 @@ import { Compass, ListVideo, Sparkles, Star, Tv } from "lucide-react";
 import TmdbImage from "@/components/TmdbImage";
 import { demoShows, isLocalVisualQa } from "@/lib/demo-catalog";
 import {
-  fetchJson,
+  fetchTmdbJson,
+  hasTmdbCredential,
   type TmdbMediaSummary,
   type TmdbSearchResponse,
 } from "@/lib/tmdb";
 
 async function fetchShows(): Promise<TmdbMediaSummary[]> {
-  const apiKey = process.env.TMDB_API_KEY;
-  if (!apiKey) return [];
+  if (!hasTmdbCredential()) return [];
 
   const url = new URL("https://api.themoviedb.org/3/tv/popular");
-  url.searchParams.set("api_key", apiKey);
   url.searchParams.set("language", "fa-IR");
   url.searchParams.set("page", "1");
 
-  const data = await fetchJson<TmdbSearchResponse>(url);
+  const data = await fetchTmdbJson<TmdbSearchResponse>(url);
   return data?.results ?? [];
 }
 
@@ -26,7 +25,7 @@ export default async function ShowsPage() {
   const liveShows = await fetchShows();
   const shows = liveShows.length ? liveShows : isLocalVisualQa ? demoShows : [];
   const isDemo = liveShows.length === 0 && isLocalVisualQa;
-  const hasLiveCatalog = Boolean(process.env.TMDB_API_KEY);
+  const hasLiveCatalog = hasTmdbCredential();
 
   return (
     <main className="min-h-screen bg-[#050914] text-white" dir="rtl">

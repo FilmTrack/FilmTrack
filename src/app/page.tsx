@@ -13,6 +13,11 @@ import {
 
 import TmdbImage from "@/components/TmdbImage";
 import { createClient } from "@/lib/supabase/server";
+import {
+  fetchTmdbJson,
+  hasTmdbCredential,
+  type TmdbSearchResponse,
+} from "@/lib/tmdb";
 
 type TMDBResult = {
   id: number;
@@ -48,20 +53,16 @@ export const metadata: Metadata = {
 };
 
 async function fetchTMDB(endpoint: string): Promise<TMDBResult[]> {
-  const apiKey = process.env.TMDB_API_KEY;
-  if (!apiKey) return [];
+  if (!hasTmdbCredential()) return [];
 
-  try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3${endpoint}?api_key=${apiKey}&language=fa-IR`,
-      { next: { revalidate: 900 } },
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
+  const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
+  url.searchParams.set("language", "fa-IR");
+
+  const data = await fetchTmdbJson<TmdbSearchResponse>(url, {
+    next: { revalidate: 900 },
+  });
+
+  return (data?.results ?? []) as TMDBResult[];
 }
 
 async function getIsLoggedIn(): Promise<boolean> {
@@ -156,14 +157,27 @@ function MediaRail({
 }
 
 export default async function Home() {
-  const [trendingMovies, trendingShows, popularShows, topRatedShows] = await Promise.all([
-    fetchTMDB("/trending/movie/week"),
-    fetchTMDB("/trending/tv/week"),
-    fetchTMDB("/tv/popular"),
-    fetchTMDB("/tv/top_rated"),
-  ]);
+  const [trendingMovies, trendingShows, popularMovies, topRatedMovies, popularShows, topRatedShows] =
+    await Promise.all([
+      fetchTMDB("/trending/movie/day"),
+      fetchTMDB("/trending/tv/day"),
+      fetchTMDB("/movie/popular"),
+      fetchTMDB("/movie/top_rated"),
+      fetchTMDB("/tv/popular"),
+      fetchTMDB("/tv/top_rated"),
+    ]);
 
-  const hero = trendingMovies.find((item) => item.backdrop_path) || trendingMovies[0] || trendingShows[0];
+  const heroCandidates = [
+    ...trendingMovies,
+    ...popularMovies,
+    ...topRatedMovies,
+    ...trendingShows,
+  ].filter((item) => item.backdrop_path || item.poster_path);
+
+  const hero =
+    heroCandidates.sort(
+      (a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0),
+    )[0] || trendingMovies[0] || trendingShows[0];
   const isLoggedIn = await getIsLoggedIn();
 
   const genres = [
@@ -203,7 +217,8 @@ export default async function Home() {
             </h1>
 
             <p className="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-              کشف کن، امتیاز بده، در دفترچه تماشا ثبت کن و Rewatchهایت را نگه دار. FilmTrack قرار است خانه اصلی تجربه سینمایی فارسی‌زبان‌ها باشد.
+              از محبوب‌ترین فیلم‌های امروز جهان تا سریال‌های داغ هفته؛ کشف کن، امتیاز بده،
+              در دفترچه تماشا ثبت کن و مسیر سینمایی شخصی خودت را بساز.
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -254,7 +269,7 @@ export default async function Home() {
                   />
                 )}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-5 pt-20">
-                  <p className="text-xs font-bold text-blue-300">منتخب این هفته</p>
+                  <p className="text-xs font-bold text-blue-300">محبوب‌ترین انتخاب امروز</p>
                   <p className="mt-1 text-xl font-black text-white">{titleOf(hero)}</p>
                   <div className="mt-3 flex items-center gap-3 text-xs text-slate-300">
                     {yearOf(hero) && <span>{yearOf(hero)}</span>}

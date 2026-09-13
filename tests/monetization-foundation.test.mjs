@@ -17,7 +17,10 @@ test("FilmTrack Plus is discoverable without activating checkout", () => {
   assert.match(navbar, /href="\/plus"/);
   assert.match(footer, /href="\/plus"/);
   assert.match(sitemap, /\$\{baseUrl\}\/plus/);
-  assert.match(plusPage, /Checkout هنوز فعال نیست/);
+  assert.match(plusPage, /FilmTrack Plus/);
+assert.match(plusPage, /نسخه حرفه‌ای/);
+assert.match(plusPage, /شروع با حساب FilmTrack/);
+assert.doesNotMatch(plusPage, /checkout/i);
 });
 
 test("monetization contract preserves the useful free tracking core", () => {
